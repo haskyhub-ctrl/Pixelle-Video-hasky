@@ -15,6 +15,7 @@ from loguru import logger
 
 from .auth_manager import AuthManager
 from .downloader import Downloader
+from .llm_extractor import check_connection
 from .models import DownloadItem, SearchOutcome
 from .nlp_parser import ScriptParser, scenes_to_json
 from .stock_searcher import DEFAULT_PROVIDERS, PROVIDER_CLASSES, StockSearchEngine
@@ -205,7 +206,15 @@ def main(argv: list[str] | None = None) -> int:
             detail = "" if st["configured"] else f"missing {', '.join(st['missing'])}"
             print(f"{mark}{provider:<13}{detail}")
         llm = auth.llm_settings()
-        print(f"LLM: {llm.backend + ' / ' + llm.model if llm.enabled else 'not configured'}")
+        if not llm.enabled:
+            print("LLM: not configured")
+            return 0
+        print(f"LLM: {llm.backend} / {llm.model} @ {llm.base_url or 'default URL'}")
+        try:
+            print(f"LLM test reply: {check_connection(llm)[:80]}")
+        except Exception as e:
+            print(f"LLM test FAILED: {e}")
+            return 1
         return 0
     try:
         if args.command == "parse":

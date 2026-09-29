@@ -19,6 +19,7 @@ import streamlit as st
 
 from pixelle_video.stock_matcher.auth_manager import PROVIDER_ENV_VARS, AuthManager
 from pixelle_video.stock_matcher.downloader import CustomClip, Downloader
+from pixelle_video.stock_matcher.llm_extractor import check_connection
 from pixelle_video.stock_matcher.models import DownloadItem, SceneAnalysis, SearchOutcome
 from pixelle_video.stock_matcher.nlp_parser import ScriptParser
 from pixelle_video.stock_matcher.stock_searcher import (
@@ -103,7 +104,22 @@ def _render_sidebar(auth: AuthManager) -> dict:
                  "or the llm section of config.yaml",
         )
         if llm.enabled:
-            st.caption(f"{llm.backend} · {llm.model}")
+            st.caption(f"{llm.backend} · {llm.model} · {llm.base_url or 'default URL'}")
+            if st.button("🔌 Test LLM connection"):
+                try:
+                    with st.spinner("Asking the LLM…"):
+                        reply = check_connection(llm)
+                    st.success(f"LLM replied: {reply[:80] or '(empty)'}")
+                except Exception as e:
+                    hint = ""
+                    if "connection" in str(e).lower():
+                        hint = (" — is the LLM server running and is STOCK_LLM_BASE_URL "
+                                "correct? (9Router: open its dashboard first)")
+                    elif "401" in str(e) or "auth" in str(e).lower():
+                        hint = " — check STOCK_LLM_API_KEY"
+                    elif "404" in str(e) or "model" in str(e).lower():
+                        hint = " — check STOCK_LLM_MODEL matches a model/combo name"
+                    st.error(f"LLM error: {e}{hint}")
         else:
             st.caption("No LLM configured: rule-based analysis only. An LLM gives much "
                        "better scene understanding, especially for Vietnamese scripts.")

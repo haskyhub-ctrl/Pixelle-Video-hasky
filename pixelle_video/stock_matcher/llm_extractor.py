@@ -166,6 +166,30 @@ def _extract_anthropic(settings: LLMSettings, sentences: list[str]) -> list[dict
     return _parse_json_payload(text)
 
 
+def check_connection(settings: LLMSettings) -> str:
+    """Send a tiny request; return the model's reply or raise with a readable error."""
+    prompt = 'Reply with exactly: OK'
+    if settings.backend == "anthropic":
+        import anthropic
+
+        client = anthropic.Anthropic(api_key=settings.api_key) if settings.api_key \
+            else anthropic.Anthropic()
+        resp = client.messages.create(
+            model=settings.model, max_tokens=200,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return next((b.text for b in resp.content if b.type == "text"), "").strip()
+
+    from openai import OpenAI
+
+    client = OpenAI(api_key=settings.api_key or "none", base_url=settings.base_url or None,
+                    timeout=60, max_retries=0)
+    resp = client.chat.completions.create(
+        model=settings.model, messages=[{"role": "user", "content": prompt}],
+    )
+    return (resp.choices[0].message.content or "").strip()
+
+
 def extract_scenes(settings: LLMSettings, sentences: list[str]) -> list[dict]:
     """Return a list of scene dicts: index, subjects, actions, descriptors, query."""
     if settings.backend == "anthropic":

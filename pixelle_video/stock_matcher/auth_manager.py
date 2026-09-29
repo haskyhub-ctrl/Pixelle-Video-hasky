@@ -18,6 +18,8 @@ from loguru import logger
 
 from .http_utils import MissingCredentialsError
 
+KNOWN_LLM_BACKENDS = ("openai", "ollama", "9router", "anthropic")
+
 # Environment variable names per provider
 PROVIDER_ENV_VARS: dict[str, list[str]] = {
     "pexels": ["PEXELS_API_KEY"],
@@ -149,6 +151,10 @@ class AuthManager:
             settings.backend = "openai"
             settings.base_url = settings.base_url or "http://localhost:11434/v1"
             settings.api_key = settings.api_key or "ollama"
+        if backend == "9router":
+            # 9Router: local gateway with an OpenAI-compatible endpoint
+            settings.backend = "openai"
+            settings.base_url = settings.base_url or "http://localhost:20128/v1"
         if not settings.backend and settings.model:
             settings.backend = "openai"  # model + key given without a backend
         return settings
