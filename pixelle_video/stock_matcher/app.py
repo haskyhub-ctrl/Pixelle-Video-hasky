@@ -26,6 +26,7 @@ from pixelle_video.stock_matcher.stock_searcher import (
     PROVIDER_CLASSES,
     StockSearchEngine,
 )
+from pixelle_video.stock_matcher.vision_ranker import rerank_outcomes
 
 STATE_PREFIX = "sm_"
 GRID_COLUMNS = 3
@@ -103,6 +104,18 @@ def _render_sidebar(auth: AuthManager) -> dict:
         )
         if llm.enabled:
             st.caption(f"{llm.backend} · {llm.model}")
+        else:
+            st.caption("No LLM configured: rule-based analysis only. An LLM gives much "
+                       "better scene understanding, especially for Vietnamese scripts.")
+        ai_rerank = st.toggle(
+            "AI judges thumbnails (vision)",
+            value=False,
+            disabled=not llm.enabled,
+            help="After searching, a vision-capable LLM looks at the top clips of each "
+                 "scene and scores how well they fit. Most accurate; costs LLM tokens. "
+                 "Set STOCK_LLM_VISION_MODEL if your main model has no vision.",
+        )
+        ai_top_n = st.slider("Clips judged per scene", 4, 12, 8, disabled=not ai_rerank)
 
         st.header("Output")
         output_dir = st.text_input("Output folder", "output/stock_clips")
@@ -121,12 +134,15 @@ def _render_sidebar(auth: AuthManager) -> dict:
         "output_dir": output_dir,
         "wps": wps,
         "show_video": show_video,
+        "ai_rerank": ai_rerank and llm.enabled,
+        "ai_top_n": ai_top_n,
     }
 
 
 def _engine(auth: AuthManager, opts: dict) -> StockSearchEngine:
     return StockSearchEngine(auth, providers=opts["providers"], orientation=opts["orientation"],
-                             min_duration=opts["min_duration"])
+                             min_duration=opts["min_duration"], words_per_second=opts["wps"],
+                             cache_dir=Path(opts["output_dir"]).parent / ".stock_cache")
 
 
 async def _search(auth, opts, scenes: list[SceneAnalysis], overrides: dict[int, str],
@@ -158,10 +174,49 @@ def _search_and_store(auth, opts, scenes: list[SceneAnalysis]) -> None:
     bar.empty()
     for name, reason in skipped.items():
         st.warning(f"{name} skipped: {reason}")
+
+    if opts["ai_rerank"]:
+        bar = st.progress(0.0, text="AI is judging thumbnails…")
+        failures: list[str] = []
+
+        def on_rated(outcome: SearchOutcome, finished: int, total: int, error: str):
+            if error:
+                failures.append(f"scene {outcome.scene.index:02d}: {error}")
+            bar.progress(finished / max(1, total),
+                         text=f"AI judged {finished}/{total} scene(s)")
+
+        try:
+            _run(rerank_outcomes(auth.llm_settings(), outcomes, top_n=opts["ai_top_n"],
+                                 on_done=on_rated))
+        except Exception as e:
+            failures.append(str(e))
+        bar.empty()
+        if failures:
+            st.warning("AI judging failed for some scenes (text ranking kept). Does the "
+                       "model accept images?\n\n" + "\n".join(failures[:5]))
+
     stored: dict[int, SearchOutcome] = _state("outcomes", {})
     for o in outcomes:
         stored[o.scene.index] = o
     _set("outcomes", stored)
+
+
+def _scene_context_line(scene: SceneAnalysis) -> str:
+    def mark(dim: str, value: str) -> str:
+        return f"{value} ↩" if dim in scene.inherited else value
+
+    parts = [
+        ("👤", mark("subject", ", ".join(scene.subjects))),
+        ("🏃", ", ".join(scene.actions)),
+        ("📍", mark("setting", ", ".join(scene.setting))),
+        ("🕒", mark("time_of_day", scene.time_of_day)),
+        ("🌦️", mark("weather", scene.weather)),
+        ("🍂", mark("season", scene.season)),
+        ("🎭", ", ".join(scene.mood)),
+    ]
+    text = " · ".join(f"{icon} {value}" for icon, value in parts if value.strip(" ↩"))
+    return f"{text or 'no context detected'} · via {scene.source}" + \
+        (" · ↩ = carried over from earlier scenes" if scene.inherited else "")
 
 
 def _render_scene(scene: SceneAnalysis, outcome: SearchOutcome | None, opts: dict, auth) -> None:
@@ -169,11 +224,9 @@ def _render_scene(scene: SceneAnalysis, outcome: SearchOutcome | None, opts: dic
     with st.container(border=True):
         head, action = st.columns([5, 1])
         head.markdown(f"**Scene {scene.index:02d}** — {scene.sentence}")
-        head.caption(
-            f"subjects: {', '.join(scene.subjects) or '–'} · actions: "
-            f"{', '.join(scene.actions) or '–'} · mood: {', '.join(scene.descriptors) or '–'} "
-            f"· via {scene.source}"
-        )
+        head.caption(_scene_context_line(scene))
+        if scene.visual_description:
+            head.caption(f"🎬 {scene.visual_description}")
         st.text_input("Search query", value=scene.query, key=f"{STATE_PREFIX}q_{scene.index}")
         if action.button("🔄 Re-search", key=f"{STATE_PREFIX}re_{scene.index}"):
             _search_and_store(auth, opts, [scene])
@@ -182,9 +235,8 @@ def _render_scene(scene: SceneAnalysis, outcome: SearchOutcome | None, opts: dic
         if outcome is None:
             st.caption("Not searched yet.")
         else:
-            if outcome.used_query and outcome.used_query != outcome.tried_queries[0]:
-                st.info(f"No results for '{outcome.tried_queries[0]}', "
-                        f"showing results for simplified query '{outcome.used_query}'.")
+            st.caption("🔎 Queries: " + " · ".join(f"`{q}`" for q in outcome.tried_queries)
+                       + " — clips sorted by how well they fit the scene")
             for provider, err in outcome.errors.items():
                 st.warning(f"{provider}: {err}")
             if not outcome.results:
@@ -197,15 +249,24 @@ def _render_scene(scene: SceneAnalysis, outcome: SearchOutcome | None, opts: dic
                     if opts["show_video"] or st.session_state.get(play_key):
                         st.video(r.preview_url, muted=True, loop=True, autoplay=True)
                     else:
-                        if r.thumbnail_url:
+                        if r.thumbnail_url.startswith("http"):
                             st.image(r.thumbnail_url, width="stretch")
                         else:
                             st.caption("(no thumbnail)")
                         st.button("▶ Preview", key=f"{play_key}_btn",
                                   on_click=lambda k=play_key: st.session_state.update({k: True}))
                     badge = "💎 " if r.is_premium else ""
-                    st.caption(f"#{i + 1} · {badge}{r.provider} · {r.duration:.0f}s · "
-                               f"{r.width}x{r.height}\n\n{r.title[:70]}")
+                    ai = f" · 🤖 {r.ai_score:.0f}/10" if r.ai_score is not None else ""
+                    lines = [f"**#{i + 1} · ⭐ {r.score:.0f}**{ai} · {badge}{r.provider} · "
+                             f"{r.duration:.0f}s · {r.width}x{r.height}"]
+                    if r.matched_terms:
+                        lines.append("✅ " + ", ".join(r.matched_terms))
+                    if r.conflicts:
+                        lines.append("⚠️ " + ", ".join(r.conflicts))
+                    if r.ai_reason:
+                        lines.append(f"🤖 {r.ai_reason}")
+                    lines.append(r.title[:70])
+                    st.caption("\n\n".join(lines))
             if outcome.results:
                 options = [None] + list(by_uid)
                 pick_key = f"{STATE_PREFIX}pick_{scene.index}"
@@ -217,7 +278,7 @@ def _render_scene(scene: SceneAnalysis, outcome: SearchOutcome | None, opts: dic
                     options,
                     index=options.index(current) if current in options else 0,
                     format_func=lambda uid: "skip" if uid is None
-                    else f"#{list(by_uid).index(uid) + 1} {by_uid[uid].provider}",
+                    else f"#{list(by_uid).index(uid) + 1} ⭐{by_uid[uid].score:.0f}",
                     horizontal=True,
                     key=pick_key,
                 )

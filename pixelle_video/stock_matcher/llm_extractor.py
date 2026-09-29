@@ -16,15 +16,30 @@ from loguru import logger
 
 from .auth_manager import LLMSettings
 
-SYSTEM_PROMPT = """You convert video narration scripts into stock-footage search terms.
-For every numbered scene, return:
-- subjects: 1-3 concrete visual nouns (who/what is on screen)
-- actions: 0-2 visible actions, as English -ing verbs
-- descriptors: 0-2 adjectives for environment, lighting or mood
-- query: a 3-6 word ENGLISH stock-video search query describing what the camera
-  would literally show. Translate non-English scripts (e.g. Vietnamese) to English.
-  Prefer concrete, filmable nouns over abstract ideas
-  ("An engineer working late at night coding" -> "developer typing code laptop night").
+SYSTEM_PROMPT = """You are a film researcher who picks stock footage for a narrated video.
+Read the WHOLE script first, then describe for every numbered scene what the camera
+should literally show. Scenes share context: if the place, time of day or weather is
+established earlier and not changed, carry it forward. Resolve pronouns to who they
+refer to.
+
+For each scene return (all values in ENGLISH, translate non-English scripts):
+- subjects: 1-3 concrete, filmable nouns on screen (people described by type/age
+  when relevant, e.g. "elderly vietnamese farmer", "young woman")
+- actions: 0-2 visible actions as -ing verbs
+- setting: 1-2 places (e.g. "office", "rice field", "city street")
+- time_of_day: one of night, evening, sunset, sunrise, morning, day, or ""
+- weather: one of rain, storm, snow, fog, wind, sunny, cloudy, or ""
+- season: one of winter, spring, summer, autumn, or ""
+- mood: 0-2 words (e.g. tense, calm, happy, lonely)
+- visual_description: one sentence describing the ideal shot
+- queries: 3-5 stock-video search queries of 2-5 words, ordered from most specific
+  to most general. Stock sites match short tag-like queries best. Keep the key
+  subject in most queries and put context (time/weather/place) in some. For abstract
+  sentences ("success takes time") use a concrete visual metaphor.
+  Example for "An engineer working late at night coding":
+  ["programmer coding at night", "developer typing laptop dark office",
+   "coding screen night", "person typing laptop"]
+- avoid: 0-3 things that would contradict the scene (e.g. "daylight", "snow")
 Return every scene index exactly once."""
 
 SCENE_SCHEMA = {
@@ -38,10 +53,18 @@ SCENE_SCHEMA = {
                     "index": {"type": "integer"},
                     "subjects": {"type": "array", "items": {"type": "string"}},
                     "actions": {"type": "array", "items": {"type": "string"}},
-                    "descriptors": {"type": "array", "items": {"type": "string"}},
-                    "query": {"type": "string"},
+                    "setting": {"type": "array", "items": {"type": "string"}},
+                    "time_of_day": {"type": "string"},
+                    "weather": {"type": "string"},
+                    "season": {"type": "string"},
+                    "mood": {"type": "array", "items": {"type": "string"}},
+                    "visual_description": {"type": "string"},
+                    "queries": {"type": "array", "items": {"type": "string"}},
+                    "avoid": {"type": "array", "items": {"type": "string"}},
                 },
-                "required": ["index", "subjects", "actions", "descriptors", "query"],
+                "required": ["index", "subjects", "actions", "setting", "time_of_day",
+                             "weather", "season", "mood", "visual_description",
+                             "queries", "avoid"],
                 "additionalProperties": False,
             },
         }
@@ -56,8 +79,8 @@ def _user_prompt(sentences: list[str]) -> str:
     return f"Scenes:\n{lines}"
 
 
-def _parse_json_payload(text: str) -> list[dict]:
-    """Extract the scenes list from a JSON (possibly fenced) text response."""
+def _parse_json_payload(text: str, key: str = "scenes") -> list[dict]:
+    """Extract the list under `key` from a JSON (possibly fenced) text response."""
     text = text.strip()
     fenced = re.search(r"```(?:json)?\s*(.*?)```", text, re.DOTALL)
     if fenced:
@@ -67,9 +90,9 @@ def _parse_json_payload(text: str) -> list[dict]:
         raise ValueError("LLM response contains no JSON")
     data = json.loads(text[start:])
     if isinstance(data, dict):
-        data = data.get("scenes", [])
+        data = data.get(key, [])
     if not isinstance(data, list):
-        raise ValueError("LLM JSON has no 'scenes' list")
+        raise ValueError(f"LLM JSON has no '{key}' list")
     return data
 
 
@@ -109,8 +132,10 @@ def _extract_openai(settings: LLMSettings, sentences: list[str]) -> list[dict]:
         model=settings.model,
         messages=[
             {"role": "system", "content": SYSTEM_PROMPT
-             + '\nRespond ONLY with JSON: {"scenes": [{"index", "subjects", "actions", '
-               '"descriptors", "query"}]}'},
+             + "\nRespond ONLY with JSON of the form "
+               + json.dumps({"scenes": [{k: "..." for k in
+                                         SCENE_SCHEMA["properties"]["scenes"]["items"]
+                                         ["properties"]}]})},
             messages[1],
         ],
         temperature=0.2,

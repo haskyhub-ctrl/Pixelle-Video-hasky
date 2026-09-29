@@ -9,10 +9,12 @@ retries with progressively simpler queries when nothing matches.
 import asyncio
 import hashlib
 import hmac
+import json
 import re
 import time
 from abc import ABC, abstractmethod
 from itertools import zip_longest
+from pathlib import Path
 from typing import Callable, Optional
 
 import httpx
@@ -21,7 +23,8 @@ from loguru import logger
 from .auth_manager import AuthManager
 from .http_utils import StockMatcherError, request_with_retry
 from .models import SceneAnalysis, SearchOutcome, StockVideoResult
-from .nlp_parser import simplify_queries
+from .nlp_parser import estimate_narration_seconds, simplify_queries
+from .relevance import rank_results
 
 DEFAULT_TIMEOUT = httpx.Timeout(20.0, connect=10.0)
 # Searches should fail fast so the UI never looks frozen
@@ -42,8 +45,9 @@ class BaseStockProvider(ABC):
         self.max_width = max_width
 
     @abstractmethod
-    async def search(self, query: str, page: int = 1, per_page: int = 10) -> list[StockVideoResult]:
-        """Search videos for a query."""
+    async def search(self, query: str, page: int = 1, per_page: int = 10,
+                     lang: Optional[str] = None) -> list[StockVideoResult]:
+        """Search videos for a query. lang is an ISO code such as "vi"."""
 
     async def resolve_download_url(self, video: StockVideoResult) -> str:
         """
@@ -67,11 +71,12 @@ class PexelsProvider(BaseStockProvider):
     name = "Pexels"
     API = "https://api.pexels.com/videos/search"
 
-    async def search(self, query, page=1, per_page=10):
+    async def search(self, query, page=1, per_page=10, lang=None):
         creds = self.auth.get("pexels")
         resp = await self._get(
             self.API,
-            params={"query": query, "page": page, "per_page": min(per_page, 80)},
+            params={"query": query, "page": page, "per_page": min(per_page, 80)}
+            | ({"locale": LOCALES.get(lang, lang)} if lang else {}),
             headers={"Authorization": creds.get("PEXELS_API_KEY")},
         )
         results = []
@@ -88,6 +93,7 @@ class PexelsProvider(BaseStockProvider):
                     id=str(v["id"]),
                     provider=self.name,
                     title=_title_from_url(v.get("url", "")) or query,
+                    keywords=_title_from_url(v.get("url", "")),
                     preview_url=preview["link"],
                     download_url=best["link"],
                     duration=float(v.get("duration") or 0),
@@ -107,7 +113,7 @@ class PixabayProvider(BaseStockProvider):
     name = "Pixabay"
     API = "https://pixabay.com/api/videos/"
 
-    async def search(self, query, page=1, per_page=10):
+    async def search(self, query, page=1, per_page=10, lang=None):
         creds = self.auth.get("pixabay")
         resp = await self._get(
             self.API,
@@ -117,7 +123,7 @@ class PixabayProvider(BaseStockProvider):
                 "page": page,
                 "per_page": max(3, min(per_page, 200)),
                 "safesearch": "true",
-            },
+            } | ({"lang": lang} if lang else {}),
         )
         results = []
         for hit in resp.json().get("hits", []):
@@ -139,6 +145,7 @@ class PixabayProvider(BaseStockProvider):
                     id=str(hit["id"]),
                     provider=self.name,
                     title=hit.get("tags", query),
+                    keywords=hit.get("tags", ""),
                     preview_url=preview["url"],
                     download_url=best["url"],
                     duration=float(hit.get("duration") or 0),
@@ -163,7 +170,9 @@ class MixkitProvider(BaseStockProvider):
     _ASSET = re.compile(r"https://assets\.mixkit\.co/videos/(\d+)/\1-(\d+)\.mp4")
     _THUMB = re.compile(r"https://assets\.mixkit\.co/videos/(\d+)/\1-thumb-(\d+)-\d+\.jpg")
 
-    async def search(self, query, page=1, per_page=10):
+    async def search(self, query, page=1, per_page=10, lang=None):
+        if lang:
+            return []
         slug = re.sub(r"[^a-z0-9]+", "-", query.lower()).strip("-")
         if not slug:
             return []
@@ -220,11 +229,11 @@ class ShutterstockProvider(BaseStockProvider):
         token = self.auth.get("shutterstock").get("SHUTTERSTOCK_API_TOKEN")
         return {"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT}
 
-    async def search(self, query, page=1, per_page=10):
+    async def search(self, query, page=1, per_page=10, lang=None):
         resp = await self._get(
             f"{self.API}/videos/search",
             params={"query": query, "page": page, "per_page": min(per_page, 500),
-                    "view": "full", "sort": "relevance"},
+                    "view": "full", "sort": "relevance"} | ({"language": lang} if lang else {}),
             headers=self._headers(),
         )
         results = []
@@ -239,6 +248,7 @@ class ShutterstockProvider(BaseStockProvider):
                     id=str(v["id"]),
                     provider=self.name,
                     title=v.get("description", query),
+                    keywords=" ".join([v.get("description", "")] + list(v.get("keywords") or [])),
                     preview_url=preview,
                     download_url="",  # resolved at download time via licensing
                     is_premium=True,
@@ -292,7 +302,9 @@ class StoryblocksProvider(BaseStockProvider):
             "project_id": creds.get("STORYBLOCKS_PROJECT_ID"),
         }
 
-    async def search(self, query, page=1, per_page=10):
+    async def search(self, query, page=1, per_page=10, lang=None):
+        if lang:
+            return []
         resource = "/api/v2/videos/search"
         params = self._signed_params(resource) | {
             "keywords": query, "page": page, "results_per_page": min(per_page, 100),
@@ -310,6 +322,7 @@ class StoryblocksProvider(BaseStockProvider):
                     id=str(v["id"]),
                     provider=self.name,
                     title=v.get("title", query),
+                    keywords=" ".join([v.get("title", "")] + list(v.get("keywords") or [])),
                     preview_url=preview,
                     download_url="",
                     is_premium=True,
@@ -361,6 +374,7 @@ PROVIDER_CLASSES: dict[str, type[BaseStockProvider]] = {
     "storyblocks": StoryblocksProvider,
 }
 DEFAULT_PROVIDERS = ["pexels", "pixabay"]
+LOCALES = {"vi": "vi-VN", "en": "en-US"}
 
 
 # ------------------------------------------------------------------- engine
@@ -377,8 +391,53 @@ def _matches_orientation(v: StockVideoResult, orientation: Optional[str]) -> boo
     }.get(orientation, True)
 
 
+class SearchCache:
+    """
+    Small on-disk cache of provider responses. Saves API quota (Pexels allows
+    200 requests/hour) when a script is searched again; Pixabay also asks
+    clients to cache results for 24 hours.
+    """
+
+    def __init__(self, directory: Optional[Path], ttl_seconds: int = 24 * 3600):
+        self.directory = Path(directory) if directory else None
+        self.ttl = ttl_seconds
+        if self.directory:
+            self.directory.mkdir(parents=True, exist_ok=True)
+
+    def _path(self, key: str) -> Optional[Path]:
+        if not self.directory:
+            return None
+        return self.directory / (hashlib.sha1(key.encode()).hexdigest() + ".json")
+
+    def get(self, key: str) -> Optional[list[StockVideoResult]]:
+        path = self._path(key)
+        if not path or not path.exists():
+            return None
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if time.time() - data["saved_at"] > self.ttl:
+                return None
+            return [StockVideoResult(**item) for item in data["results"]]
+        except Exception:
+            return None
+
+    def put(self, key: str, results: list[StockVideoResult]) -> None:
+        path = self._path(key)
+        if not path:
+            return
+        try:
+            path.write_text(json.dumps({"saved_at": time.time(),
+                                        "results": [r.to_dict() for r in results]}),
+                            encoding="utf-8")
+        except OSError as e:
+            logger.debug(f"cache write failed: {e}")
+
+
 class StockSearchEngine:
-    """Queries all enabled providers concurrently and aggregates results."""
+    """
+    Queries all enabled providers concurrently, pools the results of several
+    candidate queries per scene and ranks them by relevance to the scene.
+    """
 
     def __init__(
         self,
@@ -389,6 +448,8 @@ class StockSearchEngine:
         orientation: Optional[str] = None,
         min_duration: float = 0.0,
         max_concurrency: int = 4,
+        cache_dir: Optional[str | Path] = None,
+        words_per_second: float = 2.5,
     ):
         self.auth = auth or AuthManager()
         self._own_client = client is None
@@ -397,6 +458,8 @@ class StockSearchEngine:
         )
         self.orientation = orientation
         self.min_duration = min_duration
+        self.words_per_second = words_per_second
+        self.cache = SearchCache(cache_dir)
         self._scene_sem = asyncio.Semaphore(max_concurrency)
         self.providers: dict[str, BaseStockProvider] = {}
         self.skipped: dict[str, str] = {}
@@ -426,17 +489,25 @@ class StockSearchEngine:
         return self.providers[video.provider]
 
     async def _search_provider(self, provider: BaseStockProvider, query: str, page: int,
-                               per_page: int) -> tuple[str, list[StockVideoResult], str]:
+                               per_page: int, lang: Optional[str] = None,
+                               ) -> tuple[str, list[StockVideoResult], str]:
+        key = f"{provider.name}|{query}|{page}|{per_page}|{lang or ''}"
+        cached = self.cache.get(key)
+        if cached is not None:
+            return provider.name, cached, ""
         try:
-            results = await provider.search(query, page=page, per_page=per_page)
-            for r in results:
-                r.matched_query = query
-            return provider.name, results, ""
+            results = await provider.search(query, page=page, per_page=per_page, lang=lang)
         except Exception as e:
             logger.warning(f"{provider.name} search failed for '{query}': {e}")
             return provider.name, [], str(e)
+        for rank, r in enumerate(results):
+            r.matched_query = query
+            r.provider_rank = rank
+        self.cache.put(key, results)
+        return provider.name, results, ""
 
-    async def search_query(self, query: str, page: int = 1, per_page: int = 8
+    async def search_query(self, query: str, page: int = 1, per_page: int = 8,
+                           lang: Optional[str] = None,
                            ) -> tuple[list[StockVideoResult], dict[str, str]]:
         """Search one query on all providers concurrently; results are interleaved."""
         if not self.providers:
@@ -444,7 +515,8 @@ class StockSearchEngine:
                 "No stock provider is configured. Add PEXELS_API_KEY or PIXABAY_API_KEY to .env"
             )
         outcomes = await asyncio.gather(
-            *(self._search_provider(p, query, page, per_page) for p in self.providers.values())
+            *(self._search_provider(p, query, page, per_page, lang)
+              for p in self.providers.values())
         )
         errors = {name: err for name, _, err in outcomes if err}
         lists = [
@@ -456,24 +528,56 @@ class StockSearchEngine:
         return merged, errors
 
     async def search_scene(self, scene: SceneAnalysis, per_page: int = 8,
-                           query_override: Optional[str] = None) -> SearchOutcome:
-        """Search a scene, simplifying the query until something is found."""
+                           query_override: Optional[str] = None,
+                           parallel_queries: int = 2) -> SearchOutcome:
+        """
+        Search several candidate queries (most specific first), pool the clips
+        and rank them against the scene. More general queries are only tried
+        while the pool is still small, which keeps API usage low.
+        """
         queries = simplify_queries(scene)
         if query_override:
             queries = [query_override] + [q for q in queries if q != query_override]
         outcome = SearchOutcome(scene=scene)
+        pool: dict[str, StockVideoResult] = {}
+        target = max(per_page, 6)
+        batches = [queries[:parallel_queries]] + [[q] for q in queries[parallel_queries:]]
+
         async with self._scene_sem:
-            for query in queries:
-                outcome.tried_queries.append(query)
-                results, errors = await self.search_query(query, per_page=per_page)
-                outcome.errors.update(errors)
-                if results:
-                    outcome.results, outcome.used_query = results, query
+            for batch in batches:
+                if not batch:
+                    continue
+                found = await asyncio.gather(
+                    *(self.search_query(q, per_page=per_page) for q in batch)
+                )
+                all_failed = True
+                for query, (results, errors) in zip(batch, found):
+                    outcome.tried_queries.append(query)
+                    outcome.errors.update(errors)
+                    all_failed &= len(errors) == len(self.providers)
+                    if results and not outcome.used_query:
+                        outcome.used_query = query
+                    for r in results:
+                        pool.setdefault(r.uid, r)
+                if all_failed or len(pool) >= target:
                     break
-                if len(errors) == len(self.providers):
-                    # Every provider failed (auth / network), simpler queries won't help
-                    break
-                logger.info(f"Scene {scene.index}: no results for '{query}'")
+            # Also search in the script's own language when there is no LLM
+            # translation; providers translate tags on their side
+            if scene.native_query and scene.source != "llm" and len(pool) < 2 * target:
+                results, errors = await self.search_query(
+                    scene.native_query, per_page=per_page, lang=scene.language
+                )
+                outcome.tried_queries.append(f"{scene.native_query} [{scene.language}]")
+                for r in results:
+                    pool.setdefault(r.uid, r)
+
+        if pool:
+            # Errors from providers that failed only on some queries are noise
+            succeeded = {r.provider for r in pool.values()}
+            outcome.errors = {p: e for p, e in outcome.errors.items() if p not in succeeded}
+        narration = estimate_narration_seconds(scene.sentence, self.words_per_second)
+        ranked = rank_results(scene, list(pool.values()), outcome.tried_queries, narration)
+        outcome.results = ranked[: per_page * max(1, len(self.providers))]
         return outcome
 
     async def search_scenes(

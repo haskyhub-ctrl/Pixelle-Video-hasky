@@ -71,6 +71,8 @@ class LLMSettings:
     api_key: str = ""
     base_url: str = ""
     model: str = ""
+    # Optional separate model for thumbnail rating (must accept images)
+    vision_model: str = ""
 
     @property
     def enabled(self) -> bool:
@@ -128,6 +130,8 @@ class AuthManager:
             base_url=self._env("STOCK_LLM_BASE_URL"),
             model=self._env("STOCK_LLM_MODEL"),
         )
+        vision_model = self._env("STOCK_LLM_VISION_MODEL")
+        settings.vision_model = vision_model
         if backend == "anthropic":
             settings.model = settings.model or "claude-opus-5-5"
             return settings
@@ -137,11 +141,14 @@ class AuthManager:
 
                 llm = config_manager.config.llm
                 if llm.api_key or llm.base_url:
-                    settings = LLMSettings("openai", llm.api_key, llm.base_url, llm.model)
+                    settings = LLMSettings("openai", llm.api_key, llm.base_url, llm.model,
+                                           vision_model)
             except Exception as e:  # config.yaml absent or invalid
                 logger.debug(f"No Pixelle LLM config available: {e}")
         if backend == "ollama":
             settings.backend = "openai"
             settings.base_url = settings.base_url or "http://localhost:11434/v1"
             settings.api_key = settings.api_key or "ollama"
+        if not settings.backend and settings.model:
+            settings.backend = "openai"  # model + key given without a backend
         return settings

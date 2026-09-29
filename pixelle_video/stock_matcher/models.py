@@ -18,6 +18,21 @@ class SceneAnalysis:
     query: str = ""
     language: str = "en"
     source: str = "heuristic"  # "spacy" | "heuristic" | "llm"
+    # Visual context used for multi-query search and relevance ranking
+    setting: list[str] = field(default_factory=list)  # office, street, beach...
+    time_of_day: str = ""  # night, sunset, morning, day...
+    weather: str = ""  # rain, snow, fog, sunny...
+    season: str = ""  # winter, summer...
+    mood: list[str] = field(default_factory=list)
+    visual_description: str = ""
+    # Candidate search queries, most specific first
+    queries: list[str] = field(default_factory=list)
+    # Terms that should not appear in the footage (e.g. "daylight" for a night scene)
+    avoid: list[str] = field(default_factory=list)
+    # Original-language keywords, searched with the provider's language option
+    native_query: str = ""
+    # Context fields inherited from earlier scenes rather than stated in this one
+    inherited: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -41,6 +56,16 @@ class StockVideoResult:
     author: str = ""
     # Query that actually produced this result (may be a simplified fallback)
     matched_query: str = ""
+    # Free-text metadata (tags / description / URL slug) used for ranking
+    keywords: str = ""
+    # Position in the provider's own ranking for matched_query (0 = best)
+    provider_rank: int = 0
+    # Relevance ranking output
+    score: float = 0.0
+    matched_terms: list[str] = field(default_factory=list)
+    conflicts: list[str] = field(default_factory=list)
+    ai_score: Optional[float] = None
+    ai_reason: str = ""
 
     @property
     def uid(self) -> str:

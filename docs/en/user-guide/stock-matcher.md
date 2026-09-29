@@ -30,16 +30,43 @@ Premium providers show watermarked previews in search. Full-resolution files
 are obtained through each provider's official licensing / download endpoint,
 which counts against your subscription.
 
-## Keyword extraction
+## How scenes are matched
 
-| Backend   | When used                                  | Notes                                   |
-|-----------|--------------------------------------------|-----------------------------------------|
-| LLM       | `STOCK_LLM_*` set, or `llm` in config.yaml | Best quality; translates Vietnamese etc. |
-| spaCy     | `en_core_web_sm` installed                 | POS-based nouns / verbs / adjectives     |
-| Heuristic | always                                     | Stopwords + suffix rules, small VI glossary |
+1. **Scene analysis.** Each sentence is broken into subject, action, setting,
+   time of day, weather, season and mood. Context the script established earlier
+   ("that night, in the office...") is carried into later sentences until the
+   script changes it, and pronouns ("She smiles") resolve to the previous subject.
+   The Web UI marks carried-over values with ↩.
+2. **Several queries per scene**, from specific ("girl walking countryside rain")
+   to general ("girl"). Stock sites match short, tag-like queries best, so the
+   first two run together and more general ones are added only while too few
+   clips were found. Without an LLM, Vietnamese scenes are also searched in
+   Vietnamese through the providers' language option.
+3. **Relevance ranking.** Every clip's tags / description / URL is compared with
+   the scene. Matching subject, action, place, time and weather earn points
+   (✅ in the UI); contradictions such as a sunny clip for a night-time rain scene
+   lose points (⚠️). The provider's own order and the specificity of the query
+   add a small bonus. Clips are sorted by this score (⭐ 0-100), so the closest
+   clip comes first even when nothing matches exactly.
+4. **AI judges thumbnails (optional).** A vision-capable LLM looks at the top
+   clips of each scene and rates how well each fits (🤖 0-10). This is the most
+   accurate step because free stock sites have sparse tags. It costs LLM tokens.
 
-If a query returns nothing, it is simplified automatically:
-full query → without adjectives → core nouns → main noun.
+| Analysis backend | When used                                  | Notes                                   |
+|------------------|--------------------------------------------|-----------------------------------------|
+| LLM              | `STOCK_LLM_*` set, or `llm` in config.yaml | Best: understands context, translates, writes 3-5 queries |
+| spaCy            | `en_core_web_sm` installed                 | POS-based nouns / verbs / adjectives     |
+| Heuristic        | always                                     | Word lists (EN + VI) for place, time, weather |
+
+Search results are cached for 24 h in `output/.stock_cache`, so searching the
+same script again does not use API quota (Pexels allows 200 requests/hour).
+
+### Free vs premium libraries
+
+Premium libraries (Shutterstock, Storyblocks) have far more clips and detailed
+descriptions and keywords, which makes the relevance ranking more precise.
+Pexels only exposes a URL slug and Pixabay a few tags, so for them the
+"AI judges thumbnails" option makes the biggest difference.
 
 ## Web UI
 
@@ -61,6 +88,7 @@ uv run streamlit run pixelle_video/stock_matcher/app.py
 uv run python -m pixelle_video.stock_matcher status
 uv run python -m pixelle_video.stock_matcher parse  script.txt
 uv run python -m pixelle_video.stock_matcher search script.txt --providers pexels pixabay
+uv run python -m pixelle_video.stock_matcher search script.txt --ai-rerank   # vision LLM
 uv run python -m pixelle_video.stock_matcher run    script.txt -o output/clips \
     --pick interactive --orientation landscape
 ```

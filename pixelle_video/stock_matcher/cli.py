@@ -18,6 +18,7 @@ from .downloader import Downloader
 from .models import DownloadItem, SearchOutcome
 from .nlp_parser import ScriptParser, scenes_to_json
 from .stock_searcher import DEFAULT_PROVIDERS, PROVIDER_CLASSES, StockSearchEngine
+from .vision_ranker import rerank_outcomes
 
 
 def _read_script(path: str) -> str:
@@ -36,17 +37,24 @@ def _parse(args, auth: AuthManager):
 
 
 def _print_outcome(o: SearchOutcome, limit: int) -> None:
-    print(f"\n[{o.scene.index:02d}] {o.scene.sentence}")
-    print(f"     query: '{o.used_query or o.scene.query}'"
-          + (f"  (tried: {', '.join(o.tried_queries)})" if len(o.tried_queries) > 1 else ""))
+    s = o.scene
+    print(f"\n[{s.index:02d}] {s.sentence}")
+    context = [("setting", ", ".join(s.setting)), ("time", s.time_of_day),
+               ("weather", s.weather), ("season", s.season)]
+    print("     context: " + (", ".join(f"{k}={v}" for k, v in context if v) or "-"))
+    print(f"     queries: {' | '.join(o.tried_queries)}")
     for provider, err in o.errors.items():
         print(f"     ! {provider}: {err}")
     if not o.results:
         print("     (no results)")
     for i, r in enumerate(o.results[:limit], start=1):
         tag = " [premium]" if r.is_premium else ""
-        print(f"     {i:>2}. {r.provider:<12} {r.duration:>5.1f}s {r.width}x{r.height}"
-              f"{tag}  {r.title[:60]}  {r.page_url or r.preview_url}")
+        ai = f" ai={r.ai_score:.0f}" if r.ai_score is not None else ""
+        print(f"     {i:>2}. score={r.score:>5.1f}{ai} {r.provider:<12} {r.duration:>5.1f}s"
+              f" {r.width}x{r.height}{tag}  {r.title[:50]}  {r.page_url or r.preview_url}")
+        if r.matched_terms or r.conflicts:
+            print(f"         match: {', '.join(r.matched_terms) or '-'}"
+                  + (f"   conflicts: {', '.join(r.conflicts)}" if r.conflicts else ""))
 
 
 def _pick(outcomes: list[SearchOutcome], mode: str, limit: int) -> list[DownloadItem]:
@@ -84,33 +92,44 @@ def _tqdm_progress():
     return update, lambda: [b.close() for b in bars.values()]
 
 
-async def _search(args, auth):
-    scenes = _parse(args, auth)
-    async with StockSearchEngine(
+def _engine(args, auth) -> StockSearchEngine:
+    return StockSearchEngine(
         auth, providers=args.providers, orientation=args.orientation,
         min_duration=args.min_duration, max_width=args.max_width,
-    ) as engine:
-        for name, reason in engine.skipped.items():
-            print(f"! {name} skipped: {reason}", file=sys.stderr)
-        outcomes = await engine.search_scenes(scenes, per_page=args.per_page)
-        return scenes, outcomes, engine
+        cache_dir=None if args.no_cache else args.cache_dir,
+        words_per_second=getattr(args, "wps", 2.5),
+    )
+
+
+async def _search_all(args, auth, engine: StockSearchEngine, scenes):
+    for name, reason in engine.skipped.items():
+        print(f"! {name} skipped: {reason}", file=sys.stderr)
+    outcomes = await engine.search_scenes(scenes, per_page=args.per_page)
+    if args.ai_rerank:
+        llm = auth.llm_settings()
+        if not llm.enabled:
+            print("! --ai-rerank needs an LLM (STOCK_LLM_*)", file=sys.stderr)
+        else:
+            def report(o, done, total, error):
+                print(f"  AI judged {done}/{total}" + (f"  ! scene {o.scene.index}: {error}"
+                                                       if error else ""), file=sys.stderr)
+
+            await rerank_outcomes(llm, outcomes, top_n=args.ai_top_n, on_done=report)
+    return outcomes
 
 
 async def cmd_search(args, auth):
-    _, outcomes, _ = await _search(args, auth)
+    scenes = _parse(args, auth)
+    async with _engine(args, auth) as engine:
+        outcomes = await _search_all(args, auth, engine, scenes)
     for o in outcomes:
         _print_outcome(o, args.per_page)
 
 
 async def cmd_run(args, auth):
     scenes = _parse(args, auth)
-    async with StockSearchEngine(
-        auth, providers=args.providers, orientation=args.orientation,
-        min_duration=args.min_duration, max_width=args.max_width,
-    ) as engine:
-        for name, reason in engine.skipped.items():
-            print(f"! {name} skipped: {reason}", file=sys.stderr)
-        outcomes = await engine.search_scenes(scenes, per_page=args.per_page)
+    async with _engine(args, auth) as engine:
+        outcomes = await _search_all(args, auth, engine, scenes)
         items = _pick(outcomes, args.pick, args.per_page)
         if not items:
             print("Nothing selected for download.")
@@ -157,6 +176,11 @@ def build_arg_parser() -> argparse.ArgumentParser:
         sp.add_argument("--orientation", choices=["landscape", "portrait", "square"])
         sp.add_argument("--min-duration", type=float, default=0.0)
         sp.add_argument("--max-width", type=int, default=1920)
+        sp.add_argument("--ai-rerank", action="store_true",
+                        help="Let a vision LLM judge thumbnails of the top clips")
+        sp.add_argument("--ai-top-n", type=int, default=8)
+        sp.add_argument("--cache-dir", default="output/.stock_cache")
+        sp.add_argument("--no-cache", action="store_true")
         if name == "run":
             sp.add_argument("-o", "--output", default="output/stock_clips")
             sp.add_argument("--pick", choices=["first", "interactive"], default="first")

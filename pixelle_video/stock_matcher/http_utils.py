@@ -4,12 +4,15 @@ HTTP helpers: typed errors and retry with exponential backoff on 429 / 5xx.
 
 import asyncio
 import random
+import time
 from typing import Any, Optional
 
 import httpx
 from loguru import logger
 
 RETRYABLE_STATUS = {429, 500, 502, 503, 504}
+# Longer server-requested waits are reported instead of blocking the UI
+MAX_RETRY_WAIT = 20.0
 
 
 class StockMatcherError(Exception):
@@ -51,9 +54,13 @@ def _retry_after_seconds(response: httpx.Response) -> Optional[float]:
     if not value:
         return None
     try:
-        return max(0.0, float(value))
+        seconds = float(value)
     except ValueError:
         return None
+    if seconds > 1e9:
+        # Pexels sends a UNIX timestamp rather than a duration
+        seconds -= time.time()
+    return max(0.0, seconds)
 
 
 def backoff_delay(attempt: int, base: float = 1.0, cap: float = 30.0) -> float:
@@ -100,7 +107,13 @@ async def request_with_retry(
                         f"{provider}: rate limit still exceeded after {max_retries} retries"
                     )
                 response.raise_for_status()
-            delay = _retry_after_seconds(response) or backoff_delay(attempt, base_delay)
+            retry_after = _retry_after_seconds(response)
+            if response.status_code == 429 and retry_after and retry_after > MAX_RETRY_WAIT:
+                # Quota exhausted for a long window (Pexels: hourly); fail fast
+                raise RateLimitExceededError(
+                    f"{provider}: API quota used up, resets in ~{retry_after / 60:.0f} min"
+                )
+            delay = retry_after or backoff_delay(attempt, base_delay)
             logger.warning(
                 f"{provider}: HTTP {response.status_code}, retry {attempt + 1}/{max_retries} "
                 f"in {delay:.1f}s"

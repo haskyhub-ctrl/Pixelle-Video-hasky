@@ -19,6 +19,7 @@ from loguru import logger
 
 from .http_utils import backoff_delay
 from .models import DownloadItem, SceneAnalysis, StockVideoResult
+from .nlp_parser import estimate_narration_seconds
 from .stock_searcher import StockSearchEngine
 
 # (scene_index, bytes_downloaded, total_bytes_or_0)
@@ -34,12 +35,6 @@ def slugify(text: str, max_words: int = 3, max_len: int = 40) -> str:
 
 def scene_filename(index: int, keyword: str, ext: str = ".mp4") -> str:
     return f"scene_{index:02d}_{slugify(keyword)}{ext}"
-
-
-def estimate_narration_seconds(sentence: str, words_per_second: float = 2.5) -> float:
-    """Rough narration length: ~150 wpm for English; Vietnamese syllables count as words."""
-    words = len(re.findall(r"\w+", sentence))
-    return round(max(1.0, words / words_per_second), 2)
 
 
 @dataclass
