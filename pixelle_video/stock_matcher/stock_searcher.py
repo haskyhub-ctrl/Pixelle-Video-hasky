@@ -13,7 +13,7 @@ import re
 import time
 from abc import ABC, abstractmethod
 from itertools import zip_longest
-from typing import Optional
+from typing import Callable, Optional
 
 import httpx
 from loguru import logger
@@ -24,6 +24,9 @@ from .models import SceneAnalysis, SearchOutcome, StockVideoResult
 from .nlp_parser import simplify_queries
 
 DEFAULT_TIMEOUT = httpx.Timeout(20.0, connect=10.0)
+# Searches should fail fast so the UI never looks frozen
+SEARCH_TIMEOUT = httpx.Timeout(12.0, connect=6.0)
+SEARCH_MAX_RETRIES = 2
 USER_AGENT = "Pixelle-Video-StockMatcher/1.0"
 
 
@@ -50,6 +53,8 @@ class BaseStockProvider(ABC):
         return video.download_url
 
     async def _get(self, url: str, **kwargs) -> httpx.Response:
+        kwargs.setdefault("timeout", SEARCH_TIMEOUT)
+        kwargs.setdefault("max_retries", SEARCH_MAX_RETRIES)
         return await request_with_retry(self.client, "GET", url, provider=self.name, **kwargs)
 
 
@@ -127,6 +132,8 @@ class PixabayProvider(BaseStockProvider):
                 (v for v in reversed(available) if (v.get("width") or 0) >= 480), available[-1]
             )
             thumb = next((v.get("thumbnail") for v in ordered if v.get("thumbnail")), "")
+            if not thumb and hit.get("picture_id"):
+                thumb = f"https://i.vimeocdn.com/video/{hit['picture_id']}_640x360.jpg"
             results.append(
                 StockVideoResult(
                     id=str(hit["id"]),
@@ -469,9 +476,21 @@ class StockSearchEngine:
                 logger.info(f"Scene {scene.index}: no results for '{query}'")
         return outcome
 
-    async def search_scenes(self, scenes: list[SceneAnalysis], per_page: int = 8,
-                            overrides: Optional[dict[int, str]] = None) -> list[SearchOutcome]:
+    async def search_scenes(
+        self,
+        scenes: list[SceneAnalysis],
+        per_page: int = 8,
+        overrides: Optional[dict[int, str]] = None,
+        on_scene_done: Optional[Callable[[SearchOutcome, int, int], None]] = None,
+    ) -> list[SearchOutcome]:
+        """Search all scenes; on_scene_done(outcome, finished, total) reports progress."""
         overrides = overrides or {}
-        return list(await asyncio.gather(
-            *(self.search_scene(s, per_page, overrides.get(s.index)) for s in scenes)
-        ))
+        tasks = [
+            asyncio.ensure_future(self.search_scene(s, per_page, overrides.get(s.index)))
+            for s in scenes
+        ]
+        for finished, task in enumerate(asyncio.as_completed(tasks), start=1):
+            outcome = await task
+            if on_scene_done:
+                on_scene_done(outcome, finished, len(tasks))
+        return [t.result() for t in tasks]

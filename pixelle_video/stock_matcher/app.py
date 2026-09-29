@@ -107,8 +107,11 @@ def _render_sidebar(auth: AuthManager) -> dict:
         st.header("Output")
         output_dir = st.text_input("Output folder", "output/stock_clips")
         wps = st.number_input("Narration words / second", 1.0, 5.0, 2.5, step=0.1)
-        show_video = st.toggle("Inline video previews", value=True,
-                               help="Turn off to show thumbnails only (faster)")
+        show_video = st.toggle(
+            "Autoplay all previews (heavy)", value=False,
+            help="Loads every preview video at once and can freeze the browser. "
+                 "Leave off and click ▶ on the clips you want to watch.",
+        )
     return {
         "providers": providers,
         "orientation": None if orientation == "any" else orientation,
@@ -126,10 +129,11 @@ def _engine(auth: AuthManager, opts: dict) -> StockSearchEngine:
                              min_duration=opts["min_duration"])
 
 
-async def _search(auth, opts, scenes: list[SceneAnalysis], overrides: dict[int, str]):
+async def _search(auth, opts, scenes: list[SceneAnalysis], overrides: dict[int, str],
+                  on_scene_done=None):
     async with _engine(auth, opts) as engine:
         outcomes = await engine.search_scenes(scenes, per_page=opts["per_page"],
-                                              overrides=overrides)
+                                              overrides=overrides, on_scene_done=on_scene_done)
         return outcomes, engine.skipped
 
 
@@ -138,11 +142,20 @@ def _search_and_store(auth, opts, scenes: list[SceneAnalysis]) -> None:
         s.index: q for s in scenes
         if (q := st.session_state.get(f"{STATE_PREFIX}q_{s.index}", "").strip()) and q != s.query
     }
+    bar = st.progress(0.0, text=f"Searching {len(scenes)} scene(s)…")
+
+    def on_scene_done(outcome: SearchOutcome, finished: int, total: int):
+        bar.progress(finished / total,
+                     text=f"Searched {finished}/{total} · scene {outcome.scene.index:02d}: "
+                          f"{len(outcome.results)} clip(s)")
+
     try:
-        outcomes, skipped = _run(_search(auth, opts, scenes, overrides))
+        outcomes, skipped = _run(_search(auth, opts, scenes, overrides, on_scene_done))
     except Exception as e:
+        bar.empty()
         st.error(str(e))
         return
+    bar.empty()
     for name, reason in skipped.items():
         st.warning(f"{name} skipped: {reason}")
     stored: dict[int, SearchOutcome] = _state("outcomes", {})
@@ -180,10 +193,16 @@ def _render_scene(scene: SceneAnalysis, outcome: SearchOutcome | None, opts: dic
             cols = st.columns(GRID_COLUMNS)
             for i, r in enumerate(outcome.results):
                 with cols[i % GRID_COLUMNS]:
-                    if opts["show_video"]:
-                        st.video(r.preview_url, muted=True, loop=True)
-                    elif r.thumbnail_url:
-                        st.image(r.thumbnail_url, use_container_width=True)
+                    play_key = f"{STATE_PREFIX}play_{scene.index}_{r.uid}"
+                    if opts["show_video"] or st.session_state.get(play_key):
+                        st.video(r.preview_url, muted=True, loop=True, autoplay=True)
+                    else:
+                        if r.thumbnail_url:
+                            st.image(r.thumbnail_url, width="stretch")
+                        else:
+                            st.caption("(no thumbnail)")
+                        st.button("▶ Preview", key=f"{play_key}_btn",
+                                  on_click=lambda k=play_key: st.session_state.update({k: True}))
                     badge = "💎 " if r.is_premium else ""
                     st.caption(f"#{i + 1} · {badge}{r.provider} · {r.duration:.0f}s · "
                                f"{r.width}x{r.height}\n\n{r.title[:70]}")
@@ -320,8 +339,7 @@ def render() -> None:
 
     scenes: list[SceneAnalysis] = _state("scenes", [])
     if c2.button("2️⃣ Search all scenes", use_container_width=True, disabled=not scenes):
-        with st.spinner("Searching providers…"):
-            _search_and_store(auth, opts, scenes)
+        _search_and_store(auth, opts, scenes)
 
     if not scenes:
         st.info("Analyze a script to get started.")
