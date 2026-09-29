@@ -147,6 +147,7 @@ nav:
     - API Usage: user-guide/api.md
     - Workflows: user-guide/workflows.md
     - Templates: user-guide/templates.md
+    - Stock Matcher: user-guide/stock-matcher.md
   - Gallery: gallery/index.md
   - Tutorials:
     - Your First Video: tutorials/your-first-video.md

@@ -53,8 +53,14 @@ def main():
         icon="📚"
     )
     
+    stock_matcher_page = st.Page(
+        "pages/3_🎞️_Stock_Matcher.py",
+        title="Stock Matcher",
+        icon="🎞️"
+    )
+
     # Set up navigation and run
-    pg = st.navigation([home_page, history_page])
+    pg = st.navigation([home_page, history_page, stock_matcher_page])
     pg.run()
 
 
