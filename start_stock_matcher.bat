@@ -1,6 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
+title Stock Matcher
 
 echo ========================================
 echo   Stock Matcher - Pixelle-Video
@@ -14,7 +15,7 @@ if errorlevel 1 (
     echo Open PowerShell and run:
     echo   powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     echo Then close PowerShell and run this file again.
-    goto :end
+    goto :fail
 )
 
 if not exist ".venv" (
@@ -22,7 +23,7 @@ if not exist ".venv" (
     uv sync
     if errorlevel 1 (
         echo [ERROR] uv sync failed. See the messages above.
-        goto :end
+        goto :fail
     )
 )
 
@@ -32,12 +33,19 @@ if not exist ".env" (
     notepad ".env"
 )
 
-echo [3/3] Starting Stock Matcher at http://localhost:8501
-echo Press Ctrl+C in this window to stop.
+echo [3/3] Opening the Stock Matcher window...
+echo Keep this window open while you work. Closing the app window stops it.
 echo.
-uv run streamlit run pixelle_video/stock_matcher/app.py
-if errorlevel 1 echo [ERROR] Stock Matcher stopped with an error. See the messages above.
+uv run --with pywebview python -m pixelle_video.stock_matcher.desktop
+if errorlevel 1 (
+    echo.
+    echo Native window failed, opening in a browser window instead...
+    uv run python -m pixelle_video.stock_matcher.desktop --browser
+    if errorlevel 1 goto :fail
+)
+exit /b 0
 
-:end
+:fail
 echo.
 pause
+exit /b 1

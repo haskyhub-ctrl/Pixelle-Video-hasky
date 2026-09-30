@@ -417,7 +417,7 @@ class SearchCache:
             data = json.loads(path.read_text(encoding="utf-8"))
             if time.time() - data["saved_at"] > self.ttl:
                 return None
-            return [StockVideoResult(**item) for item in data["results"]]
+            return [StockVideoResult.from_dict(item) for item in data["results"]]
         except Exception:
             return None
 

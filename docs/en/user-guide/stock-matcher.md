@@ -68,26 +68,48 @@ descriptions and keywords, which makes the relevance ranking more precise.
 Pexels only exposes a URL slug and Pixabay a few tags, so for them the
 "AI judges thumbnails" option makes the biggest difference.
 
-## Web UI
+## Desktop app (Windows)
 
-Open **Stock Matcher** in the Pixelle-Video web UI (`./start_web.sh`), or run it
-standalone:
+Double-click **`start_stock_matcher.bat`**: it installs dependencies on first
+run, creates `.env` if needed and opens Stock Matcher in its own window
+(pywebview / Edge WebView2; falls back to an Edge or Chrome app window).
+Run **`create_desktop_shortcut.bat`** once to get a "Stock Matcher" icon on the
+Desktop.
+
+Other platforms / manually:
 
 ```bash
-uv run streamlit run pixelle_video/stock_matcher/app.py
+uv run --with pywebview python -m pixelle_video.stock_matcher.desktop
+uv run python -m pixelle_video.stock_matcher.desktop --browser   # browser window
+uv run streamlit run pixelle_video/stock_matcher/app.py           # plain Streamlit
 ```
 
+It is also available as the **Stock Matcher** page of the Pixelle-Video web UI.
+
+### Projects and autosave
+
+Each script is a **project** saved in `output/stock_projects/<name>/project.json`
+after every step: script, analysis, search results, chosen clips, edited
+queries, custom uploads and which scenes were downloaded. Closing the window
+or restarting loses nothing; the most recent project reopens automatically.
+Switch, create or rename projects in the sidebar. Clips download to
+`output/stock_clips/<project>/` by default.
+
+### Using it
+
 1. Paste the script and click **Analyze script**
-2. Edit any query, then **Search all scenes** (or **Re-search** one scene)
-3. Pick a clip per scene, or upload your own
-4. **Download selected** → clips + `manifest.json` in the output folder
+2. **Search all scenes**: each scene shows its 3 best matches (change with
+   "Clips shown per scene"; **Show more** reveals the next ones)
+3. Edit a query and **Re-search** a scene if needed, or upload your own clip
+4. Pick a clip per scene (or **Auto-select best clip**), then **Download selected**
+   → clips + `manifest.json`
 
 ## CLI
 
 ```bash
 uv run python -m pixelle_video.stock_matcher status
 uv run python -m pixelle_video.stock_matcher parse  script.txt
-uv run python -m pixelle_video.stock_matcher search script.txt --providers pexels pixabay
+uv run python -m pixelle_video.stock_matcher search script.txt --providers pexels pixabay --top 3
 uv run python -m pixelle_video.stock_matcher search script.txt --ai-rerank   # vision LLM
 uv run python -m pixelle_video.stock_matcher run    script.txt -o output/clips \
     --pick interactive --orientation landscape

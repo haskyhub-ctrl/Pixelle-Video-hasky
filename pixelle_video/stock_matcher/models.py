@@ -2,8 +2,14 @@
 Data models shared across the stock matcher modules.
 """
 
-from dataclasses import asdict, dataclass, field
-from typing import Optional
+from dataclasses import asdict, dataclass, field, fields
+from typing import Any, Optional
+
+
+def _known_fields(cls, data: dict) -> dict:
+    """Drop keys this version does not know (older / newer saved projects)."""
+    names = {f.name for f in fields(cls)}
+    return {k: v for k, v in data.items() if k in names}
 
 
 @dataclass
@@ -36,6 +42,10 @@ class SceneAnalysis:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "SceneAnalysis":
+        return cls(**_known_fields(cls, data))
 
 
 @dataclass
@@ -75,6 +85,10 @@ class StockVideoResult:
     def to_dict(self) -> dict:
         return asdict(self)
 
+    @classmethod
+    def from_dict(cls, data: dict) -> "StockVideoResult":
+        return cls(**_known_fields(cls, data))
+
 
 @dataclass
 class SearchOutcome:
@@ -85,6 +99,25 @@ class SearchOutcome:
     used_query: str = ""
     tried_queries: list[str] = field(default_factory=list)
     errors: dict[str, str] = field(default_factory=dict)  # provider -> message
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "scene": self.scene.to_dict(),
+            "results": [r.to_dict() for r in self.results],
+            "used_query": self.used_query,
+            "tried_queries": list(self.tried_queries),
+            "errors": dict(self.errors),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "SearchOutcome":
+        return cls(
+            scene=SceneAnalysis.from_dict(data["scene"]),
+            results=[StockVideoResult.from_dict(r) for r in data.get("results", [])],
+            used_query=data.get("used_query", ""),
+            tried_queries=list(data.get("tried_queries", [])),
+            errors=dict(data.get("errors", {})),
+        )
 
 
 @dataclass

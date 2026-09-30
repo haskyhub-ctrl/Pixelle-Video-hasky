@@ -124,14 +124,14 @@ async def cmd_search(args, auth):
     async with _engine(args, auth) as engine:
         outcomes = await _search_all(args, auth, engine, scenes)
     for o in outcomes:
-        _print_outcome(o, args.per_page)
+        _print_outcome(o, args.top)
 
 
 async def cmd_run(args, auth):
     scenes = _parse(args, auth)
     async with _engine(args, auth) as engine:
         outcomes = await _search_all(args, auth, engine, scenes)
-        items = _pick(outcomes, args.pick, args.per_page)
+        items = _pick(outcomes, args.pick, args.top)
         if not items:
             print("Nothing selected for download.")
             return
@@ -173,7 +173,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
         common(sp)
         sp.add_argument("--providers", nargs="+", default=DEFAULT_PROVIDERS,
                         choices=list(PROVIDER_CLASSES))
-        sp.add_argument("--per-page", type=int, default=6)
+        sp.add_argument("--per-page", type=int, default=8,
+                        help="Clips fetched per query and provider (candidates)")
+        sp.add_argument("--top", type=int, default=3, help="Best clips shown per scene")
         sp.add_argument("--orientation", choices=["landscape", "portrait", "square"])
         sp.add_argument("--min-duration", type=float, default=0.0)
         sp.add_argument("--max-width", type=int, default=1920)
