@@ -97,12 +97,20 @@ Switch, create or rename projects in the sidebar. Clips download to
 
 ### Using it
 
-1. Paste the script and click **Analyze script**
-2. **Search all scenes**: each scene shows its 3 best matches (change with
-   "Clips shown per scene"; **Show more** reveals the next ones)
-3. Edit a query and **Re-search** a scene if needed, or upload your own clip
-4. Pick a clip per scene (or **Auto-select best clip**), then **Download selected**
-   → clips + `manifest.json`
+The interface is in Vietnamese.
+
+1. Paste the script and click **Phân tích kịch bản** (analyze)
+2. **Tìm tất cả các cảnh** (search all): each scene shows its 3 best matches
+   (change with "Số clip hiện mỗi cảnh"; **Xem thêm** reveals the next ones)
+3. Each scene has a checkbox to include it in the download. The best clip is
+   used unless you press **Chọn clip này** on another one. Edit a query and
+   **Tìm lại** to re-search a scene, or upload your own clip.
+4. The download bar (above and below the scenes) has **Chọn tất cả / Bỏ chọn
+   tất cả**, **Tải tất cả cảnh** (every scene that has a clip),
+   **Tải cảnh đã chọn** (ticked scenes only) and **Mở thư mục**. Clips and
+   `manifest.json` go to `output/stock_clips/<project>/`. A scene already
+   downloaded with the same clip is not fetched again; picking a different clip
+   replaces the file.
 
 ## CLI
 

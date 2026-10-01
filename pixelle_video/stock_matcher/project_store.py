@@ -39,6 +39,8 @@ class ProjectState:
     queries: dict[int, str] = field(default_factory=dict)  # scene -> edited query
     uploads: dict[int, str] = field(default_factory=dict)  # scene -> file path
     downloads: dict[int, str] = field(default_factory=dict)  # scene -> saved file
+    excluded: list[int] = field(default_factory=list)  # scenes unticked for download
+    download_uids: dict[int, str] = field(default_factory=dict)  # scene -> clip downloaded
     updated_at: str = ""
 
     def to_dict(self) -> dict:
@@ -53,6 +55,8 @@ class ProjectState:
             "queries": {str(k): v for k, v in self.queries.items()},
             "uploads": {str(k): v for k, v in self.uploads.items()},
             "downloads": {str(k): v for k, v in self.downloads.items()},
+            "excluded": sorted(self.excluded),
+            "download_uids": {str(k): v for k, v in self.download_uids.items()},
         }
 
     @classmethod
@@ -70,6 +74,8 @@ class ProjectState:
             queries=int_keys(data.get("queries")),
             uploads=int_keys(data.get("uploads")),
             downloads=int_keys(data.get("downloads")),
+            excluded=[int(i) for i in data.get("excluded", [])],
+            download_uids=int_keys(data.get("download_uids")),
             updated_at=data.get("updated_at", ""),
         )
 
