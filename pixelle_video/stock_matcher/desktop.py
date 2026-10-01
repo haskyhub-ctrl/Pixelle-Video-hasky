@@ -57,6 +57,8 @@ def start_server(port: int) -> subprocess.Popen:
         "--server.fileWatcherType", "none",
         "--browser.gatherUsageStats", "false",
         "--theme.base", "light",
+        "--theme.primaryColor", "#ff6f61",
+        "--client.toolbarMode", "minimal",
     ]
     creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
     proc = subprocess.Popen(cmd, cwd=PROJECT_ROOT, creationflags=creationflags)

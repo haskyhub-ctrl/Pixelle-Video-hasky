@@ -49,12 +49,14 @@ class BaseStockProvider(ABC):
                      lang: Optional[str] = None) -> list[StockVideoResult]:
         """Search videos for a query. lang is an ISO code such as "vi"."""
 
-    async def resolve_download_url(self, video: StockVideoResult) -> str:
+    async def resolve_download_url(self, video: StockVideoResult,
+                                   max_width: Optional[int] = None) -> str:
         """
-        Return the URL of the full-resolution file. Free providers already have
-        it; premium providers override this to license the clip first.
+        Return the URL of the file to download, at most max_width pixels wide
+        when the provider offers several renditions. Premium providers
+        override this to license the clip first.
         """
-        return video.download_url
+        return pick_variant(video, max_width or self.max_width)
 
     async def _get(self, url: str, **kwargs) -> httpx.Response:
         kwargs.setdefault("timeout", SEARCH_TIMEOUT)
@@ -88,12 +90,14 @@ class PexelsProvider(BaseStockProvider):
             fitting = [f for f in files if (f.get("width") or 0) <= self.max_width]
             best = (fitting or files)[-1]
             preview = next((f for f in files if (f.get("width") or 0) >= 480), files[0])
+            variants = {str(f["width"]): f["link"] for f in files if f.get("width")}
             results.append(
                 StockVideoResult(
                     id=str(v["id"]),
                     provider=self.name,
                     title=_title_from_url(v.get("url", "")) or query,
                     keywords=_title_from_url(v.get("url", "")),
+                    variants=variants,
                     preview_url=preview["link"],
                     download_url=best["link"],
                     duration=float(v.get("duration") or 0),
@@ -138,6 +142,7 @@ class PixabayProvider(BaseStockProvider):
                 (v for v in reversed(available) if (v.get("width") or 0) >= 480), available[-1]
             )
             thumb = next((v.get("thumbnail") for v in ordered if v.get("thumbnail")), "")
+            variants = {str(v["width"]): v["url"] for v in available if v.get("width")}
             if not thumb and hit.get("picture_id"):
                 thumb = f"https://i.vimeocdn.com/video/{hit['picture_id']}_640x360.jpg"
             results.append(
@@ -146,6 +151,7 @@ class PixabayProvider(BaseStockProvider):
                     provider=self.name,
                     title=hit.get("tags", query),
                     keywords=hit.get("tags", ""),
+                    variants=variants,
                     preview_url=preview["url"],
                     download_url=best["url"],
                     duration=float(hit.get("duration") or 0),
@@ -261,9 +267,12 @@ class ShutterstockProvider(BaseStockProvider):
             )
         return results
 
-    async def resolve_download_url(self, video):
+    async def resolve_download_url(self, video, max_width=None):
         creds = self.auth.get("shutterstock")
-        item = {"video_id": video.id, "size": creds.get("SHUTTERSTOCK_VIDEO_SIZE") or "hd"}
+        width = max_width or self.max_width
+        size = creds.get("SHUTTERSTOCK_VIDEO_SIZE") or (
+            "sd" if width <= 1280 else "hd" if width <= 1920 else "4k")
+        item = {"video_id": video.id, "size": size}
         if creds.get("SHUTTERSTOCK_SUBSCRIPTION_ID"):
             item["subscription_id"] = creds.get("SHUTTERSTOCK_SUBSCRIPTION_ID")
         resp = await request_with_retry(
@@ -332,14 +341,29 @@ class StoryblocksProvider(BaseStockProvider):
             )
         return results
 
-    async def resolve_download_url(self, video):
+    async def resolve_download_url(self, video, max_width=None):
         resource = f"/api/v2/videos/stock-item/download/{video.id}"
         resp = await self._get(self.BASE + resource, params=self._signed_params(resource))
         urls = _collect_mp4_urls(resp.json())
         if not urls:
             raise StockMatcherError("Storyblocks returned no MP4 download URL")
         # Prefer the highest resolution not exceeding max_width's matching height
-        return max(urls, key=lambda u: _resolution_hint(u, self.max_width))
+        return max(urls, key=lambda u: _resolution_hint(u, max_width or self.max_width))
+
+
+def pick_variant(video: StockVideoResult, max_width: int) -> str:
+    """Widest rendition not wider than max_width (else the smallest one)."""
+    sized = []
+    for width, url in (video.variants or {}).items():
+        try:
+            sized.append((int(width), url))
+        except ValueError:
+            continue
+    if not sized:
+        return video.download_url
+    sized.sort()
+    fitting = [url for width, url in sized if width <= max_width]
+    return fitting[-1] if fitting else sized[0][1]
 
 
 def _collect_mp4_urls(data) -> list[str]:

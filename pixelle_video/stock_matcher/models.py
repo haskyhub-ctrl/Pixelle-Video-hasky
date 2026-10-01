@@ -76,6 +76,8 @@ class StockVideoResult:
     conflicts: list[str] = field(default_factory=list)
     ai_score: Optional[float] = None
     ai_reason: str = ""
+    # Other renditions of the same clip: width (as text) -> URL
+    variants: dict[str, str] = field(default_factory=dict)
 
     @property
     def uid(self) -> str:
@@ -127,3 +129,5 @@ class DownloadItem:
     scene: SceneAnalysis
     video: StockVideoResult
     keyword: Optional[str] = None
+    # 0 = the clip used for the scene, 1.. = alternates downloaded for editing
+    alt: int = 0

@@ -232,6 +232,31 @@ def detect_language(text: str) -> str:
     return "vi" if vi_hits / len(letters) > 0.03 else "en"
 
 
+_SRT_TIME = re.compile(r"^\d{1,2}:\d{2}:\d{2}[,.]\d{1,3}\s*-->\s*\d{1,2}:\d{2}:\d{2}[,.]\d{1,3}")
+
+
+def script_from_file(filename: str, data: bytes) -> str:
+    """
+    Plain script text from an uploaded .txt / .md / .srt / .vtt file.
+    Subtitle cues become one line each (counters and timestamps removed).
+    """
+    text = data.decode("utf-8-sig", errors="replace")
+    if not filename.lower().endswith((".srt", ".vtt")):
+        return text.strip()
+    lines, cue = [], []
+    for raw in text.splitlines() + [""]:
+        line = raw.strip()
+        if not line:
+            if cue:
+                lines.append(" ".join(cue))
+                cue = []
+            continue
+        if line.upper() == "WEBVTT" or line.isdigit() or _SRT_TIME.match(line):
+            continue
+        cue.append(re.sub(r"<[^>]+>", "", line))
+    return "\n".join(lines)
+
+
 def estimate_narration_seconds(sentence: str, words_per_second: float = 2.5) -> float:
     """Rough narration length: ~150 wpm for English; Vietnamese syllables count as words."""
     words = len(re.findall(r"\w+", sentence))

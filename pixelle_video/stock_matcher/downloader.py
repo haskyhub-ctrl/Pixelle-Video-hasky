@@ -1,8 +1,9 @@
 """
 Module D (backend) - Async downloading and manifest generation.
 
-Files are named `scene_01_<keyword>.mp4`; a `manifest.json` maps every script
-sentence to its clip, source metadata and an estimated narration timeline.
+Files are named `scene_01_<keyword>.mp4` by default (see NAME_STYLES); a
+`manifest.json` maps every script sentence to its clip, source metadata and an
+estimated narration timeline, and `credits.txt` lists sources for attribution.
 """
 
 import asyncio
@@ -33,8 +34,23 @@ def slugify(text: str, max_words: int = 3, max_len: int = 40) -> str:
     return ("_".join(words) or "clip")[:max_len]
 
 
-def scene_filename(index: int, keyword: str, ext: str = ".mp4") -> str:
-    return f"scene_{index:02d}_{slugify(keyword)}{ext}"
+NAME_STYLES = {
+    "keyword": "scene_01_tu_khoa.mp4",
+    "scene": "scene_01.mp4",
+    "number": "01.mp4",
+}
+
+
+def scene_filename(index: int, keyword: str, ext: str = ".mp4", style: str = "keyword",
+                   alt: int = 0) -> str:
+    if style == "number":
+        base = f"{index:02d}"
+    elif style == "scene":
+        base = f"scene_{index:02d}"
+    else:
+        base = f"scene_{index:02d}_{slugify(keyword)}"
+    suffix = f"_alt{alt}" if alt else ""
+    return f"{base}{suffix}{ext}"
 
 
 @dataclass
@@ -44,6 +60,8 @@ class DownloadResult:
     path: Optional[Path] = None
     error: str = ""
     custom: bool = False
+    alt: int = 0
+    skipped_existing: bool = False
 
     @property
     def ok(self) -> bool:
@@ -67,6 +85,9 @@ class Downloader:
     max_retries: int = 3
     overwrite: bool = False
     words_per_second: float = 2.5
+    # Widest rendition to download (None = provider default, usually 1080p)
+    max_width: Optional[int] = None
+    name_style: str = "keyword"
     _results: list[DownloadResult] = field(default_factory=list)
 
     def __post_init__(self):
@@ -110,15 +131,17 @@ class Downloader:
                            on_progress: Optional[ProgressCallback] = None) -> DownloadResult:
         scene, video = item.scene, item.video
         keyword = item.keyword or video.matched_query or scene.query or video.title
-        dest = self.output_dir / scene_filename(scene.index, keyword)
-        result = DownloadResult(scene=scene, video=video)
+        dest = self.output_dir / scene_filename(scene.index, keyword, style=self.name_style,
+                                                alt=item.alt)
+        result = DownloadResult(scene=scene, video=video, alt=item.alt)
         async with sem:
             try:
                 if dest.exists() and not self.overwrite:
                     logger.info(f"Scene {scene.index}: {dest.name} exists, skipping")
+                    result.skipped_existing = True
                 else:
                     provider = self.engine.provider_for(video)
-                    url = await provider.resolve_download_url(video)
+                    url = await provider.resolve_download_url(video, self.max_width)
                     await self._stream_to_file(url, dest, scene.index, on_progress, video.provider)
                     logger.success(f"Scene {scene.index}: saved {dest.name}")
                 result.path = dest
@@ -130,7 +153,8 @@ class Downloader:
     def add_custom_clip(self, clip: CustomClip) -> DownloadResult:
         """Copy a user-provided clip into the output folder with the scene naming scheme."""
         ext = clip.source_path.suffix or ".mp4"
-        dest = self.output_dir / scene_filename(clip.scene.index, clip.keyword, ext)
+        dest = self.output_dir / scene_filename(clip.scene.index, clip.keyword, ext,
+                                                style=self.name_style)
         if clip.source_path.resolve() != dest.resolve():
             shutil.copyfile(clip.source_path, dest)
         return DownloadResult(scene=clip.scene, video=None, path=dest, custom=True)
@@ -143,7 +167,7 @@ class Downloader:
             *(self.download_one(item, sem, on_progress) for item in items)
         ))
         results.extend(self.add_custom_clip(c) for c in custom_clips or [])
-        results.sort(key=lambda r: r.scene.index)
+        results.sort(key=lambda r: (r.scene.index, r.alt))
         self._results = results
         return results
 
@@ -153,7 +177,11 @@ class Downloader:
         Write manifest.json. Scenes without a clip are included with file=null so
         the timeline stays complete.
         """
-        by_index = {r.scene.index: r for r in results}
+        by_index = {r.scene.index: r for r in results if not r.alt}
+        alternates: dict[int, list[DownloadResult]] = {}
+        for r in results:
+            if r.alt and r.ok:
+                alternates.setdefault(r.scene.index, []).append(r)
         scenes = all_scenes or [r.scene for r in results]
         entries, cursor = [], 0.0
         for scene in sorted(scenes, key=lambda s: s.index):
@@ -183,6 +211,12 @@ class Downloader:
                     "width": v.width,
                     "height": v.height,
                 } if v else None,
+                "alternates": [
+                    {"file": str(a.path.relative_to(self.output_dir)),
+                     "provider": a.video.provider, "id": a.video.id,
+                     "page_url": a.video.page_url}
+                    for a in alternates.get(scene.index, []) if a.video
+                ],
                 "timing": {
                     "start": round(cursor, 2),
                     "end": round(cursor + narration, 2),
@@ -202,4 +236,19 @@ class Downloader:
         }
         path = self.output_dir / "manifest.json"
         path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+        return path
+
+    def write_credits(self, results: list[DownloadResult]) -> Path:
+        """credits.txt: where each clip comes from, for attribution in the video."""
+        lines = ["Nguồn video / Video credits", ""]
+        for r in results:
+            if not r.ok or not r.video:
+                continue
+            v = r.video
+            alt = f" (dự phòng {r.alt})" if r.alt else ""
+            author = f" — by {v.author}" if v.author else ""
+            lines.append(f"Cảnh {r.scene.index:02d}{alt}: {r.path.name} — {v.provider}"
+                         f"{author} — {v.page_url or v.preview_url}")
+        path = self.output_dir / "credits.txt"
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
         return path

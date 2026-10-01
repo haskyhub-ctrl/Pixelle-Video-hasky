@@ -97,20 +97,26 @@ Switch, create or rename projects in the sidebar. Clips download to
 
 ### Using it
 
-The interface is in Vietnamese.
+The interface is in Vietnamese and has three steps:
 
-1. Paste the script and click **Phân tích kịch bản** (analyze)
-2. **Tìm tất cả các cảnh** (search all): each scene shows its 3 best matches
-   (change with "Số clip hiện mỗi cảnh"; **Xem thêm** reveals the next ones)
-3. Each scene has a checkbox to include it in the download. The best clip is
-   used unless you press **Chọn clip này** on another one. Edit a query and
-   **Tìm lại** to re-search a scene, or upload your own clip.
-4. The download bar (above and below the scenes) has **Chọn tất cả / Bỏ chọn
-   tất cả**, **Tải tất cả cảnh** (every scene that has a clip),
-   **Tải cảnh đã chọn** (ticked scenes only) and **Mở thư mục**. Clips and
-   `manifest.json` go to `output/stock_clips/<project>/`. A scene already
-   downloaded with the same clip is not fetched again; picking a different clip
-   replaces the file.
+1. **📝 Kịch bản** (script): paste the script or import a `.txt` / `.srt` / `.vtt`
+   file, then **⚡ Phân tích + Tìm clip** (analyze and search in one click).
+2. **🎬 Chọn clip** (choose): every scene shows its best matches with score,
+   matched / conflicting context and an AI score when enabled. The best clip is
+   used automatically ("Không dùng trùng clip" avoids reusing one clip in two
+   scenes); press **Chọn** on another card to change it. Untick a scene to leave
+   it out, re-search one scene, or use your own clip.
+3. **⬇️ Tải về** (download): buttons on top (**Tải cảnh đã chọn**, **Tải tất cả
+   cảnh**, **Mở thư mục**), then options:
+   - quality 720p / 1080p / 4K (largest rendition up to that width),
+   - one clip per scene, or the chosen clip plus 1-5 alternates
+     (`scene_01_..._alt1.mp4`) to choose from while editing,
+   - file naming (`scene_01_keyword.mp4`, `scene_01.mp4`, `01.mp4`),
+   - output folder, overwrite, `credits.txt` with sources/authors, parallel downloads,
+   - a scene table with checkboxes and thumbnails.
+
+A scene already downloaded with the same clip is not fetched again; picking a
+different clip replaces the file.
 
 ## CLI
 
