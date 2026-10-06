@@ -97,6 +97,52 @@ def open_app_window(url: str) -> bool:
     return False
 
 
+def _port_open(host: str, port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.settimeout(1)
+        return s.connect_ex((host, port)) == 0
+
+
+def ensure_9router(timeout: float = 40) -> None:
+    """
+    When the LLM backend is a local 9Router, start it if it is not running so
+    the user does not have to open it by hand. Opens in its own minimized
+    console window, which keeps running after Stock Matcher closes.
+    """
+    from urllib.parse import urlparse
+
+    try:
+        from .auth_manager import AuthManager
+
+        llm = AuthManager(env_file=PROJECT_ROOT / ".env").llm_settings()
+    except Exception:
+        return
+    url = urlparse(llm.base_url or "")
+    is_local = url.hostname in ("localhost", "127.0.0.1")
+    if not (llm.enabled and is_local and (url.port or 80) == 20128):
+        return
+    if _port_open("127.0.0.1", 20128):
+        print("9Router is already running.")
+        return
+    exe = shutil.which("9router")
+    if not exe:
+        print("9Router is not installed. Install Node.js 20+ and run:  npm install -g 9router")
+        return
+    print("Starting 9Router …")
+    if os.name == "nt":
+        subprocess.Popen(["cmd", "/c", "start", "9Router", "/min", exe], cwd=Path.home())
+    else:
+        subprocess.Popen([exe], cwd=Path.home(), start_new_session=True,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if _port_open("127.0.0.1", 20128):
+            print("9Router is up at http://localhost:20128")
+            return
+        time.sleep(1)
+    print("9Router did not answer on port 20128 yet; check its window.")
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Run Stock Matcher as a desktop app")
     parser.add_argument("--port", type=int, default=8765)
@@ -104,6 +150,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="Open in a browser window instead of a native window")
     args = parser.parse_args(argv)
 
+    ensure_9router()
     port = free_port(args.port)
     url = f"http://127.0.0.1:{port}"
     print(f"Starting {TITLE} on {url} …")
