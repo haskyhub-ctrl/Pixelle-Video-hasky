@@ -88,12 +88,26 @@ class TemplateConfig(BaseModel):
     )
 
 
+class NicheConfig(BaseModel):
+    """Niche research (YouTube / multi-platform analytics) configuration"""
+    youtube_api_key: str = Field(default="", description="YouTube Data API v3 key")
+    tikhub_api_key: str = Field(default="", description="TikHub API key (TikTok, Douyin, Xiaohongshu...)")
+    tikhub_cost_per_request_usd: float = Field(default=0.001, ge=0, description="TikHub cost per request (USD)")
+    tikhub_endpoints: dict = Field(default_factory=dict, description="Override TikHub endpoints: {platform: [path, keyword_param]}")
+    default_region: str = Field(default="VN", description="Default region code (ISO 3166-1 alpha-2)")
+    default_language: str = Field(default="vi", description="Default relevance language")
+    avd_ratio: float = Field(default=0.35, gt=0, le=1, description="Assumed average view duration ratio")
+    usd_to_vnd: float = Field(default=25000, gt=0, description="Exchange rate for cost display")
+    db_path: str = Field(default="data/niche.db", description="SQLite database path")
+
+
 class PixelleVideoConfig(BaseModel):
     """Pixelle-Video main configuration"""
     project_name: str = Field(default="Pixelle-Video", description="Project name")
     llm: LLMConfig = Field(default_factory=LLMConfig)
     comfyui: ComfyUIConfig = Field(default_factory=ComfyUIConfig)
     template: TemplateConfig = Field(default_factory=TemplateConfig)
+    niche: NicheConfig = Field(default_factory=NicheConfig)
     
     def is_llm_configured(self) -> bool:
         """Check if LLM is properly configured"""

@@ -33,7 +33,7 @@ st.set_page_config(
     page_title="Pixelle-Video - AI Video Generator",
     page_icon="🎬",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 
@@ -53,8 +53,38 @@ def main():
         icon="📚"
     )
     
-    # Set up navigation and run
-    pg = st.navigation([home_page, history_page])
+    def niche(file: str, title: str, icon: str) -> st.Page:
+        return st.Page(f"pages/niche/{file}", title=title, icon=icon)
+
+    # Set up navigation (sidebar groups) and run
+    pg = st.navigation({
+        "Tạo video": [home_page, history_page],
+        "Tổng quan": [
+            niche("overview.py", "Tổng quan", "🏠"),
+            niche("monetization.py", "Kiểm tra kiếm tiền", "💰"),
+        ],
+        "Nghiên cứu": [
+            niche("niche_finder.py", "Đào ngách", "⛏️"),
+            niche("multi_market.py", "Đào đa thị trường", "🌏"),
+            niche("channel_hunter.py", "Săn kênh nổ view", "🎯"),
+            niche("channel_analysis.py", "Phân tích kênh", "📊"),
+            niche("trends.py", "Xu hướng đa nền tảng", "📈"),
+            niche("keyword_research.py", "Nghiên cứu từ khoá", "🔑"),
+        ],
+        "Sáng tạo": [
+            niche("winning_topics.py", "Chủ đề thắng", "🏆"),
+            niche("script_studio.py", "Studio kịch bản", "✍️"),
+            niche("content_calendar.py", "Lịch đăng", "📅"),
+        ],
+        "Tối ưu kênh": [
+            niche("my_channel.py", "Kênh của tôi", "📺"),
+            niche("channel_doctor.py", "Bác sĩ kênh", "🩺"),
+            niche("seo_optimizer.py", "Tối ưu video (SEO)", "🚀"),
+        ],
+        "Dữ liệu": [
+            niche("data_center.py", "Ngách đã lưu & kênh", "🗂️"),
+        ],
+    })
     pg.run()
 
 

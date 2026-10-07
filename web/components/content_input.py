@@ -39,9 +39,13 @@ def render_content_input():
             # Single task mode (original logic, unchanged)
             # ================================================================
             # Processing mode selection
+            # Prefill handed over from the niche research pages (Studio kịch bản, Lịch đăng)
+            prefill_text = st.session_state.get("niche_prefill_text", "")
+            prefill_mode = st.session_state.get("niche_prefill_mode", "generate")
             mode = st.radio(
                 "Processing Mode",
                 ["generate", "fixed"],
+                index=1 if prefill_mode == "fixed" else 0,
                 horizontal=True,
                 format_func=lambda x: tr(f"mode.{x}"),
                 label_visibility="collapsed"
@@ -55,6 +59,7 @@ def render_content_input():
             text = st.text_area(
                 tr("input.text"),
                 placeholder=text_placeholder,
+                value=prefill_text,
                 height=text_height,
                 help=text_help
             )
@@ -79,6 +84,7 @@ def render_content_input():
             # Title input (optional for both modes)
             title = st.text_input(
                 tr("input.title"),
+                value=st.session_state.get("niche_prefill_title", ""),
                 placeholder=tr("input.title_placeholder"),
                 help=tr("input.title_help")
             )

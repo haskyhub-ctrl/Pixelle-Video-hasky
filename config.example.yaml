@@ -65,3 +65,16 @@ template:
   #   - 1920x1080 (horizontal/landscape): image_film.html, image_full.html, etc.
   # See templates/ directory for all available templates
   default_template: "1080x1920/image_default.html"
+
+# ==================== Niche Research Configuration ====================
+# Used by the "Nghiên cứu / Sáng tạo / Tối ưu kênh" pages
+niche:
+  youtube_api_key: ""      # https://console.cloud.google.com → YouTube Data API v3 (10,000 units/day free)
+  tikhub_api_key: ""       # https://tikhub.io — TikTok, Douyin, Xiaohongshu, Kuaishou, Bilibili, Instagram...
+  tikhub_cost_per_request_usd: 0.001
+  tikhub_endpoints: {}     # Override if TikHub renames an endpoint, e.g. {douyin: ["/api/v1/douyin/web/...", "keyword"]}
+  default_region: VN
+  default_language: vi
+  avd_ratio: 0.35          # Assumed average view duration (35%) for watch-hour estimates
+  usd_to_vnd: 25000
+  db_path: data/niche.db
