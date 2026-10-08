@@ -238,3 +238,77 @@ def send_to_video_generator(text: str, title: str = "", fixed: bool = True) -> N
     st.session_state["niche_prefill_title"] = title
     st.session_state["niche_prefill_mode"] = "fixed" if fixed else "generate"
     st.switch_page("pages/1_🎬_Home.py")
+
+
+AFFILIATE_REGIONS = {"VN": "Việt Nam", "TH": "Thái Lan", "ID": "Indonesia", "MY": "Malaysia",
+                     "PH": "Philippines", "SG": "Singapore", "JP": "Nhật Bản", "MX": "Mexico"}
+
+
+def products_frame(products):
+    import pandas as pd
+    return pd.DataFrame([{
+        "Ảnh": p.image or None,
+        "Win": p.scores.get("win_score", 0),
+        "Sản phẩm": p.title,
+        "Nhãn": " ".join(p.labels),
+        "Bán/ngày": p.sold_per_day,
+        "Đã bán": p.sold_total,
+        "Đánh giá": p.rating or None,
+        "Lượt đánh giá": p.reviews or None,
+        "Hoa hồng": p.commission_rate or None,
+        "Giá": p.price or None,
+        "Video gắn giỏ": p.videos_with_cart or None,
+        "Shop": p.shop_name,
+        "Link": p.url or None,
+    } for p in products])
+
+
+def render_product_table(products, key="products", height=520):
+    import streamlit as st
+    if not products:
+        st.info("Không có sản phẩm nào.")
+        return
+    st.dataframe(products_frame(products), key=key, height=height, hide_index=True, width="stretch",
+                 column_config={
+                     "Ảnh": st.column_config.ImageColumn("", width="small"),
+                     "Win": st.column_config.ProgressColumn("Điểm Win", min_value=0, max_value=100, format="%.0f"),
+                     "Sản phẩm": st.column_config.TextColumn(width="large"),
+                     "Bán/ngày": st.column_config.NumberColumn(format="%.0f"),
+                     "Đã bán": st.column_config.NumberColumn(format="compact"),
+                     "Đánh giá": st.column_config.NumberColumn(format="%.1f ⭐"),
+                     "Lượt đánh giá": st.column_config.NumberColumn(format="compact"),
+                     "Hoa hồng": st.column_config.NumberColumn(format="percent"),
+                     "Giá": st.column_config.NumberColumn(format="compact"),
+                     "Link": st.column_config.LinkColumn("Mở", display_text="🛒"),
+                 })
+
+
+def render_heatmap(hm, key="heatmap"):
+    """7×24 posting heatmap of view-vs-typical ratio (Altair, no matplotlib dep)."""
+    import altair as alt
+    import pandas as pd
+    import streamlit as st
+    if not hm or not hm.get("n"):
+        st.caption("Chưa đủ dữ liệu để vẽ giờ vàng.")
+        return
+    weekdays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"]
+    rows = [{"Thứ": weekdays[wd], "wd": wd, "Giờ": hr, "ratio": hm["grid"][wd][hr],
+             "n": hm["counts"][wd][hr]}
+            for wd in range(7) for hr in range(24)]
+    df = pd.DataFrame(rows)
+    chart = (
+        alt.Chart(df).mark_rect().encode(
+            x=alt.X("Giờ:O", title="Giờ (GMT+7)"),
+            y=alt.Y("Thứ:O", sort=weekdays, title=None),
+            color=alt.Color("ratio:Q", scale=alt.Scale(scheme="yelloworangered"),
+                            legend=alt.Legend(title="× trung vị")),
+            tooltip=["Thứ", "Giờ", alt.Tooltip("ratio:Q", title="× trung vị", format=".1f"),
+                     alt.Tooltip("n:Q", title="Số video")],
+        ).properties(height=240)
+    )
+    st.altair_chart(chart, width="stretch", key=key)
+    if hm.get("best"):
+        from pixelle_video.services.niche.service import WEEKDAYS_VI
+        slots = " · ".join(f"{WEEKDAYS_VI[s['weekday']]} {s['hour']:02d}:00" for s in hm["best"])
+        st.markdown(f"🕒 **Giờ vàng:** {slots}")
+    st.caption(f"Màu đậm = view cao hơn mức chung (dựa trên {hm['n']} video). Số là bội số so với trung vị.")

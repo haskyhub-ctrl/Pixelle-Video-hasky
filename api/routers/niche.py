@@ -259,3 +259,52 @@ async def calendar_update(item_id: int, item: CalendarItem):
 async def calendar_delete(item_id: int):
     service().storage.delete_calendar(item_id)
     return {"ok": True}
+
+
+# ---- Phase 2: teardown, media prompts, affiliate ----
+
+class TeardownRequest(BaseModel):
+    video: str
+    language: str = "vi"
+
+
+class MediaPromptRequest(BaseModel):
+    title: str
+    scenes: list[str]
+    style: str = "cinematic"
+    tool: str = "generic"
+
+
+class ProductHuntRequest(BaseModel):
+    keyword: str = ""
+    region: str = "VN"
+    limit: int = Field(default=40, ge=1, le=100)
+
+
+class SalesScriptRequest(BaseModel):
+    product: str
+    pain_points: str = ""
+    benefits: str = ""
+    duration_sec: int = Field(default=45, ge=15, le=180)
+    language: str = "vi"
+
+
+@router.post("/teardown")
+async def teardown(request: TeardownRequest):
+    return await _run(service().teardown(request.video, request.language))
+
+
+@router.post("/media-prompts")
+async def media_prompts(request: MediaPromptRequest):
+    return await _run(service().media_prompts(request.title, request.scenes, request.style, request.tool))
+
+
+@router.post("/products/hunt")
+async def products_hunt(request: ProductHuntRequest):
+    return await _run(service().hunt_products(request.keyword, request.region, request.limit))
+
+
+@router.post("/sales-script")
+async def sales_script(request: SalesScriptRequest):
+    return await _run(service().sales_script(request.product, request.pain_points, request.benefits,
+                                             request.duration_sec, request.language))

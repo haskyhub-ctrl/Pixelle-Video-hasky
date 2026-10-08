@@ -65,17 +65,23 @@ Kết quả mong đợi khi key đúng:
 ./start_niche.sh      # Linux/macOS  (Windows: start_niche.bat)
 ```
 
-Mở trình duyệt tại **http://localhost:8501**. Menu bên trái có đủ các nhóm chức năng:
+Mở trình duyệt tại **http://localhost:8501**. Menu bên trái chia 3 khu như DeepNiche:
 
-| Nhóm | Trang |
+| Khu | Trang |
 |---|---|
 | Tổng quan | Tổng quan · Kiểm tra kiếm tiền |
-| Nghiên cứu | Đào ngách · Đào đa thị trường · Săn kênh nổ view · Phân tích kênh · Xu hướng đa nền tảng · Nghiên cứu từ khoá |
-| Sáng tạo | Chủ đề thắng · Studio kịch bản · Lịch đăng |
-| Tối ưu kênh | Kênh của tôi · Bác sĩ kênh · Tối ưu video (SEO) |
-| Dữ liệu | Ngách đã lưu & kênh theo dõi |
+| Khu YouTube · Tìm ngách | Đào ngách · Đào đa thị trường · Săn kênh nổ view · Phân tích kênh · Mổ băng đối thủ · Xu hướng đa nền tảng · Nghiên cứu từ khoá |
+| Khu YouTube · Sản xuất | Chủ đề thắng · Studio kịch bản (kèm sinh prompt ảnh/video) · Lịch đăng · Kênh của tôi · Bác sĩ kênh · Tối ưu video (SEO) |
+| Khu TikTok Affiliate | Trung tâm Affiliate · Săn sản phẩm win · Kênh affiliate làm tốt · Phân tích kênh TikTok · Mổ băng video bán hàng · Xu hướng TikTok · Kịch bản video bán hàng · Lịch đăng video |
+| Dữ liệu & Tài khoản | Ngách đã lưu & kênh · Kết nối API · Chi phí API |
 
-Từ **Studio kịch bản** bấm "🎬 Tạo video" để đẩy kịch bản sang trình tạo video sẵn có của Pixelle-Video.
+Từ **Studio kịch bản** / **Kịch bản video bán hàng** bấm "🎬 Tạo video" để đẩy sang trình tạo video sẵn có của Pixelle-Video.
+
+### Khu TikTok Affiliate & nguồn dữ liệu TikTok Shop
+Khu Affiliate cần dữ liệu TikTok Shop (số đã bán, video gắn giỏ, điểm Win). Mặc định dùng **TikHub**
+(`TIKHUB_API_KEY`). Khi **chưa cấu hình**, trang "Săn sản phẩm win" chạy bằng **dữ liệu mẫu** để xem trước —
+công thức điểm Win và giao diện giữ nguyên, chỉ cần cắm key là ra số liệu thật. Nếu bạn dùng Kalodata/EchoTik,
+báo mình endpoint để thêm adapter (xem `pixelle_video/services/niche/products.py`).
 
 ## 5. API (tuỳ chọn)
 

@@ -72,6 +72,8 @@ def render_channel_analysis(data: dict, key: str = "ca") -> None:
         render_video_table(videos, key=f"{key}_all")
         download_excel({"Videos": videos, "Stats": [s]}, f"channel_{ch.channel_id}.xlsx", key=f"{key}_xlsx")
     with tabs[3]:
+        from web.components.niche_ui import render_heatmap
+        render_heatmap(svc.posting_heatmap(videos), key=f"{key}_heat")
         slots = data["posting_slots"]
         if slots:
             st.dataframe(pd.DataFrame([{"Ngày": WEEKDAYS_VI[x["weekday"]], "Giờ (GMT+7)": f"{x['hour']:02d}:00",

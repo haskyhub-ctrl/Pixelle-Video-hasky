@@ -518,3 +518,96 @@ def seo_audit(title: str, description: str, tags: Sequence[str], keyword: str = 
         "seo_score": score,
         "checks": [{"check": name, "weight": w, "passed": ok} for name, w, ok in checks],
     }
+
+
+# ---------------------------------------------------------------------------
+# Affiliate: product Win score & posting heatmap
+# ---------------------------------------------------------------------------
+
+def _pct(n: float, lo: float, hi: float) -> float:
+    """Linear 0..1 ramp between lo and hi."""
+    if hi <= lo:
+        return 0.0
+    return clamp((n - lo) / (hi - lo))
+
+
+def product_win_score(product) -> dict[str, float]:
+    """
+    TikTok Shop "Win" score (0–100) for an affiliate product.
+
+        velocity   = logistic(log10(sold_per_day), center=2 (=100/day), scale=0.5)
+        momentum   = sold_per_day / max(sold_total/age, ...) proxied by sold_per_day ramp
+        proof      = logistic(log10(reviews), center=2.5 (~300), scale=0.6) × (rating/5)
+        content    = logistic(log10(videos_with_cart), center=1.3 (~20), scale=0.5)
+        payout     = ramp(commission_rate, 0.05, 0.25)
+
+        win = 100 × (0.35 velocity + 0.20 proof + 0.20 content + 0.15 payout + 0.10 rating_ok)
+    """
+    spd = getattr(product, "sold_per_day", 0) or 0
+    reviews = getattr(product, "reviews", 0) or 0
+    rating = getattr(product, "rating", 0) or 0
+    vids = getattr(product, "videos_with_cart", 0) or 0
+    comm = getattr(product, "commission_rate", 0) or 0
+
+    velocity = logistic(safe_log10(spd), 2.0, 0.5)
+    proof = logistic(safe_log10(reviews), 2.5, 0.6) * (rating / 5 if rating else 0.6)
+    content = logistic(safe_log10(vids), 1.3, 0.5)
+    payout = _pct(comm, 0.05, 0.25)
+    rating_ok = 1.0 if rating >= 4.5 else (rating / 4.5 if rating else 0.5)
+
+    win = 100 * (0.35 * velocity + 0.20 * proof + 0.20 * content + 0.15 * payout + 0.10 * rating_ok)
+    return {
+        "win_score": round(win, 1),
+        "velocity": round(velocity, 2),
+        "proof": round(proof, 2),
+        "content": round(content, 2),
+        "payout": round(payout, 2),
+        "sold_per_day": round(spd, 1),
+    }
+
+
+def product_labels(p, scores: dict[str, float]) -> list[str]:
+    labels = []
+    if scores.get("win_score", 0) >= 70:
+        labels.append("🏆 Sản phẩm Win")
+    if scores.get("velocity", 0) >= 0.6:
+        labels.append("📈 Đang tăng tốc")
+    if (getattr(p, "videos_with_cart", 0) or 0) < 10 and scores.get("velocity", 0) >= 0.5:
+        labels.append("🌱 Ít video, còn chỗ")
+    if (getattr(p, "commission_rate", 0) or 0) >= 0.2:
+        labels.append("💰 Hoa hồng cao")
+    if (getattr(p, "rating", 0) or 0) and p.rating < 4.3:
+        labels.append("⚠️ Đánh giá thấp")
+    return labels
+
+
+def score_products(products, now=None):
+    for p in products:
+        p.scores = product_win_score(p)
+        p.labels = product_labels(p, p.scores)
+    return sorted(products, key=lambda p: p.scores.get("win_score", 0), reverse=True)
+
+
+def posting_heatmap(videos, tz_offset_hours: int = 7):
+    """
+    7×24 grid of median outlier by (weekday, hour) in local time, plus the ratio
+    vs. the overall median so a cell reads 'views vs typical'. Returns a dict with
+    'grid' (7 lists of 24 floats = ratio) and 'best' slots.
+    """
+    buckets: dict[tuple[int, int], list[float]] = {}
+    overall = []
+    for v in videos:
+        if not v.published_at:
+            continue
+        local = v.published_at + timedelta(hours=tz_offset_hours)
+        val = v.scores.get("outlier") or outlier_ratio(v.views, v.channel_median_views, v.channel_subscribers)
+        buckets.setdefault((local.weekday(), local.hour), []).append(val)
+        overall.append(val)
+    base = median(overall) or 1.0
+    grid = [[0.0] * 24 for _ in range(7)]
+    counts = [[0] * 24 for _ in range(7)]
+    for (wd, hr), vals in buckets.items():
+        grid[wd][hr] = round(median(vals) / base, 2)
+        counts[wd][hr] = len(vals)
+    best = best_posting_slots(videos, tz_offset_hours, top_n=3)
+    return {"grid": grid, "counts": counts, "base": round(base, 2), "best": best, "n": len(overall)}

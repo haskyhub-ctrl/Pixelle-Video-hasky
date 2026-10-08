@@ -100,3 +100,28 @@ class SearchFilters(BaseModel):
     max_per_channel: int = 3
     hide_adult: bool = True
     strict_topic: bool = True
+
+
+class ProductItem(BaseModel):
+    """A TikTok Shop / affiliate product (normalized across data sources)."""
+    platform: str = "tiktok_shop"
+    product_id: str
+    title: str = ""
+    url: str = ""
+    image: str = ""
+    shop_name: str = ""
+    category: str = ""
+    region: str = "VN"
+    price: float = 0.0
+    currency: str = "VND"
+    commission_rate: float = 0.0  # 0..1
+    rating: float = 0.0
+    reviews: int = 0
+    sold_total: int = 0
+    sold_per_day: float = 0.0
+    revenue_total: float = 0.0
+    videos_with_cart: int = 0
+    influencers: int = 0
+    published_at: Optional[datetime] = None
+    scores: dict[str, float] = Field(default_factory=dict)
+    labels: list[str] = Field(default_factory=list)

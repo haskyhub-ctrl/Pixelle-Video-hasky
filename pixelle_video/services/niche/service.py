@@ -566,6 +566,52 @@ class NicheService:
                            reference: str = "") -> ai.VideoScript:
         return await ai.write_script(self.llm, topic, hook, duration_sec, style, language, reference)
 
+    async def media_prompts(self, title: str, scenes: Sequence[str], style: str = "cinematic",
+                            tool: str = "generic") -> ai.MediaPrompts:
+        return await ai.media_prompts(self.llm, title, list(scenes), style, tool)
+
+    async def teardown(self, video_ref: str, language: str = "vi") -> dict:
+        """Mổ băng đối thủ: fetch a video + its top comments, then AI framework + 3 remakes."""
+        from pixelle_video.services.niche.youtube import parse_video_ref
+        yt = self.youtube()
+        vids = await yt.videos([parse_video_ref(video_ref)])
+        if not vids:
+            raise YouTubeError("Không tìm thấy video")
+        video = vids[0]
+        if video.channel_id:
+            chans = await yt.channels([video.channel_id])
+            if chans:
+                video.channel_subscribers = chans[0].subscribers
+                ups = await yt.channel_uploads(chans[0], 15)
+                video.channel_median_views = formulas.channel_median_views(ups, video.video_id)
+        video.scores = formulas.viral_score(video)
+        result = await ai.video_teardown(self.llm, video, [], language) if self.llm_ready() else None
+        return {"video": video, "teardown": result, "usage": self._log_yt(yt)}
+
+    def posting_heatmap(self, videos: Sequence[VideoItem]) -> dict:
+        return formulas.posting_heatmap(videos)
+
+    # ----------------------------------------------------- affiliate
+
+    def product_provider(self):
+        from pixelle_video.services.niche import products
+        return products.get_provider(self.cfg.tikhub_api_key, self.cfg.tikhub_endpoints)
+
+    async def hunt_products(self, keyword: str = "", region: str = "VN", limit: int = 40) -> dict:
+        from pixelle_video.services.niche import products
+        prov = self.product_provider()
+        items = products.fill_derived(await prov.search(keyword, region, limit))
+        scored = formulas.score_products(items)
+        th_requests = getattr(prov, "requests", 0)
+        if th_requests:
+            self.storage.log_usage("tikhub", th_requests, 0, th_requests * self.cfg.tikhub_cost_per_request_usd)
+        return {"products": scored, "source": prov.name, "is_sample": not prov.available or prov.name == "sample",
+                "region": region}
+
+    async def sales_script(self, product: str, pain_points: str = "", benefits: str = "",
+                           duration_sec: int = 45, language: str = "vi") -> ai.SalesScript:
+        return await ai.sales_script(self.llm, product, pain_points, benefits, duration_sec, language)
+
     # ----------------------------------------------------- optimization
 
     def doctor_checks(self, stats: dict, competitor_stats: Sequence[dict] = (),

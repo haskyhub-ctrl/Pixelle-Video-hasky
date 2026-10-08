@@ -209,3 +209,60 @@ def test_doctor_checks_flags_inactive_channel(tmp_path):
     problems = {c["problem"] for c in checks}
     assert "Kênh ngừng đăng quá lâu" in problems and "Thua đối thủ về view" in problems
     assert svc.health_score(checks) < 50
+
+
+# --------------------------------------------------- phase 2: affiliate + heatmap
+
+def test_product_win_score_and_labels():
+    from pixelle_video.services.niche.models import ProductItem
+    hot = ProductItem(product_id="a", sold_per_day=400, reviews=1200, rating=4.8,
+                      videos_with_cart=6, commission_rate=0.25)
+    weak = ProductItem(product_id="b", sold_per_day=5, reviews=10, rating=4.0,
+                       videos_with_cart=200, commission_rate=0.05)
+    ranked = formulas.score_products([weak, hot])
+    assert ranked[0].product_id == "a"
+    assert ranked[0].scores["win_score"] > ranked[1].scores["win_score"]
+    assert "🌱 Ít video, còn chỗ" in ranked[0].labels  # strong sales, few videos
+    assert "💰 Hoa hồng cao" in ranked[0].labels
+
+
+def test_posting_heatmap_shape():
+    vids = [vid(str(i), views=10_000 * (i + 1), subs=1000, hours=24 * i + 3) for i in range(8)]
+    formulas.score_videos(vids, NOW)
+    hm = formulas.posting_heatmap(vids)
+    assert len(hm["grid"]) == 7 and all(len(row) == 24 for row in hm["grid"])
+    assert hm["n"] == 8 and hm["best"]
+
+
+def test_sample_product_provider_deterministic():
+    import asyncio
+
+    from pixelle_video.services.niche.products import SampleProductProvider, fill_derived
+    prov = SampleProductProvider()
+    a = fill_derived(asyncio.run(prov.search("", "VN", 12)))
+    b = fill_derived(asyncio.run(prov.search("", "VN", 12)))
+    assert len(a) == 12 and [p.sold_per_day for p in a] == [p.sold_per_day for p in b]
+    assert prov.available is True
+
+
+def test_get_provider_switches_on_key():
+    from pixelle_video.services.niche.products import (
+        SampleProductProvider,
+        TikHubProductProvider,
+        get_provider,
+    )
+    assert isinstance(get_provider(""), SampleProductProvider)
+    assert isinstance(get_provider("k"), TikHubProductProvider)
+
+
+def test_env_overrides_config():
+    import os
+
+    from pixelle_video.config.loader import apply_env_overrides
+    os.environ["YOUTUBE_API_KEY"] = "envYT"
+    os.environ["TIKHUB_API_KEY"] = "envTH"
+    data = apply_env_overrides({})
+    assert data["niche"]["youtube_api_key"] == "envYT"
+    assert data["niche"]["tikhub_api_key"] == "envTH"
+    del os.environ["YOUTUBE_API_KEY"]
+    del os.environ["TIKHUB_API_KEY"]

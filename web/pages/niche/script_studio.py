@@ -57,6 +57,7 @@ with st.form("studio"):
 if submitted and topic.strip():
     ss.studio_topic, ss.studio_hook, ss.studio_reference = topic, hook, reference
     ss.pop("studio_script_text", None)  # let the editor pick up the new script
+    ss.pop("studio_prompts", None)
     ss.studio_script = run(svc.write_script(topic.strip(), hook, duration, style, language, reference),
                            "AI đang viết kịch bản...")
 
@@ -68,11 +69,33 @@ st.markdown(f"### {sc.title}")
 st.markdown(f"🎣 **Hook:** {sc.hook}")
 script_text = st.text_area("Kịch bản (sửa trực tiếp được — mỗi đoạn là một cảnh)", value=sc.script, height=360,
                            key="studio_script_text")
-if sc.scene_visuals:
-    with st.expander("🎨 Gợi ý hình ảnh từng cảnh"):
+st.markdown(f"📣 **CTA:** {sc.cta}  \n" + " ".join(sc.hashtags))
+
+# --- Prompt ảnh / video (English) for AI tools ---
+st.markdown("#### 🎨 Prompt ảnh & video (cho công cụ AI)")
+pc1, pc2 = st.columns([3, 1])
+ptool = pc1.selectbox("Công cụ đích", ["generic", "Midjourney", "Flux", "Stable Diffusion", "Sora", "Kling", "Runway", "Veo"])
+if pc2.button("✨ Sinh prompt", width="stretch"):
+    scenes = sc.scene_visuals or [p for p in script_text.split("\n\n") if p.strip()]
+    ss.studio_prompts = run(svc.media_prompts(sc.title, scenes, style=style, tool=ptool),
+                            "AI đang viết prompt ảnh/video...")
+mp = ss.get("studio_prompts")
+if mp:
+    if mp.style_note:
+        st.caption(f"🎭 Giữ đồng nhất: {mp.style_note}")
+    it = st.tabs(["🖼️ Prompt ảnh", "🎞️ Prompt video", "🚫 Negative"])
+    with it[0]:
+        for i, pr in enumerate(mp.image_prompts, 1):
+            st.code(f"{i}. {pr}", language=None)
+    with it[1]:
+        for i, pr in enumerate(mp.video_prompts, 1):
+            st.code(f"{i}. {pr}", language=None)
+    with it[2]:
+        st.code(mp.negative_prompt or "—", language=None)
+elif sc.scene_visuals:
+    with st.expander("🎨 Gợi ý hình ảnh từng cảnh (từ kịch bản)"):
         for i, vis in enumerate(sc.scene_visuals, 1):
             st.markdown(f"{i}. {vis}")
-st.markdown(f"📣 **CTA:** {sc.cta}  \n" + " ".join(sc.hashtags))
 
 a, b, c = st.columns(3)
 if a.button("🎬 Tạo video từ kịch bản", type="primary", width="stretch"):

@@ -233,3 +233,84 @@ Trả lời bằng {language}:
 - hashtags: 3-5 hashtag.
 - thumbnail_text: 3 phương án chữ trên thumbnail (≤ 4 từ)."""
     return await llm(prompt, response_type=SEOSuggestion, temperature=0.6, max_tokens=3000)
+
+
+# ------------------------------------------------------- video teardown (mổ băng)
+
+class Teardown(BaseModel):
+    framework: str = Field(description="The structural formula of why this video works")
+    hook_breakdown: str = Field(description="How the first 3 seconds grab attention")
+    structure: list[str] = Field(default_factory=list, description="Beat-by-beat structure")
+    psychology: list[str] = Field(default_factory=list, description="Psychological triggers used")
+    audience: str = Field(default="", description="Who this targets")
+    remakes: list[TopicIdea] = Field(default_factory=list, description="3 differentiated remakes, policy-safe")
+
+
+async def video_teardown(llm: LLMService, video: VideoItem, comments: Sequence[str] = (),
+                         language: str = "vi") -> Teardown:
+    """Mổ băng đối thủ — learn the framework of a winning video, output 3 remakes."""
+    cmt = ("\nBình luận nổi bật của người xem:\n" + "\n".join(f"- {c}" for c in list(comments)[:30])) if comments else ""
+    prompt = f"""Mổ xẻ video đang thắng để học CÁI KHUNG (không chép nội dung).
+Tiêu đề: "{video.title}"
+Nền tảng: {video.platform} · views: {video.views:,} · outlier: {video.scores.get('outlier', '?')}x · thời lượng: {video.duration_sec}s
+Mô tả: {video.description[:800]}{cmt}
+
+Trả lời bằng {language}:
+- framework: công thức vì sao video này thắng (1-2 câu).
+- hook_breakdown: 3 giây đầu níu người xem thế nào.
+- structure: cấu trúc theo từng nhịp (mở đầu → thân → cao trào → kết).
+- psychology: các đòn tâm lý (tò mò, FOMO, phản bác, bất ngờ...).
+- audience: video nhắm tới ai.
+- remakes: 3 chủ đề làm lại KHÁC BIỆT, đúng chính sách (không vi phạm bản quyền/nhạy cảm), mỗi cái có title, hook (3 giây đầu), angle, based_on, format (short/long)."""
+    return await llm(prompt, response_type=Teardown, temperature=0.7, max_tokens=4000)
+
+
+# ------------------------------------------------------- AI image/video prompts
+
+class MediaPrompts(BaseModel):
+    image_prompts: list[str] = Field(default_factory=list, description="English image prompts, one per scene")
+    video_prompts: list[str] = Field(default_factory=list, description="English video/motion prompts, one per scene")
+    negative_prompt: str = Field(default="", description="Shared negative prompt")
+    style_note: str = Field(default="", description="Consistent style/character note to reuse")
+
+
+async def media_prompts(llm: LLMService, title: str, scenes: Sequence[str], style: str = "cinematic",
+                        tool: str = "generic") -> MediaPrompts:
+    """Turn each scene into an English image prompt and a video/motion prompt."""
+    scene_list = "\n".join(f"{i + 1}. {s}" for i, s in enumerate(scenes))
+    prompt = f"""You are a prompt engineer for AI image/video tools (target tool: {tool}).
+Video title: "{title}". Visual style: {style}.
+Scenes (in order):
+{scene_list}
+
+Return ENGLISH prompts:
+- image_prompts: one detailed image prompt per scene (subject, composition, lighting, lens, mood, style), keep the same character/style consistent across scenes.
+- video_prompts: one motion/video prompt per scene (camera movement, action, pacing), matching each image.
+- negative_prompt: one shared negative prompt.
+- style_note: a short reusable style+character description to keep all scenes consistent.
+Exactly {len(scenes)} items in image_prompts and video_prompts, same order."""
+    return await llm(prompt, response_type=MediaPrompts, temperature=0.6, max_tokens=4000)
+
+
+# ------------------------------------------------------- affiliate: sales script
+
+class SalesScript(BaseModel):
+    title: str
+    hook: str = Field(description="First 3 seconds pain-point hook")
+    script: str = Field(description="Short sales video script: hook → demo → benefit → objection → offer → CTA")
+    scene_visuals: list[str] = Field(default_factory=list)
+    on_screen_text: list[str] = Field(default_factory=list, description="Text overlays per beat")
+    cta: str = ""
+    hashtags: list[str] = Field(default_factory=list)
+
+
+async def sales_script(llm: LLMService, product: str, pain_points: str = "", benefits: str = "",
+                       duration_sec: int = 45, language: str = "vi") -> SalesScript:
+    prompt = f"""Viết kịch bản video ngắn BÁN HÀNG affiliate TikTok Shop cho sản phẩm: "{product}".
+Thời lượng ~{duration_sec}s. Ngôn ngữ: {language}.
+Điểm đau khách hàng: {pain_points or '(tự suy luận)'}
+Lợi ích chính: {benefits or '(tự suy luận)'}
+Cấu trúc bắt buộc: hook nỗi đau (3s) → demo sản phẩm → lợi ích → xử lý phản đối → ưu đãi → bấm giỏ hàng (CTA).
+Trả lời: title, hook, script (mỗi cảnh cách nhau dòng trống), scene_visuals, on_screen_text (chữ overlay từng nhịp), cta, hashtags.
+Không cam kết công dụng quá mức (tránh vi phạm chính sách TikTok Shop với thuốc/thực phẩm chức năng)."""
+    return await llm(prompt, response_type=SalesScript, temperature=0.75, max_tokens=4000)

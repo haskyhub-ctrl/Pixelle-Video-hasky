@@ -63,26 +63,37 @@ def main():
             niche("overview.py", "Tổng quan", "🏠"),
             niche("monetization.py", "Kiểm tra kiếm tiền", "💰"),
         ],
-        "Nghiên cứu": [
+        "Khu YouTube · Tìm ngách": [
             niche("niche_finder.py", "Đào ngách", "⛏️"),
             niche("multi_market.py", "Đào đa thị trường", "🌏"),
             niche("channel_hunter.py", "Săn kênh nổ view", "🎯"),
             niche("channel_analysis.py", "Phân tích kênh", "📊"),
+            niche("video_teardown.py", "Mổ băng đối thủ", "🔬"),
             niche("trends.py", "Xu hướng đa nền tảng", "📈"),
             niche("keyword_research.py", "Nghiên cứu từ khoá", "🔑"),
         ],
-        "Sáng tạo": [
+        "Khu YouTube · Sản xuất": [
             niche("winning_topics.py", "Chủ đề thắng", "🏆"),
             niche("script_studio.py", "Studio kịch bản", "✍️"),
             niche("content_calendar.py", "Lịch đăng", "📅"),
-        ],
-        "Tối ưu kênh": [
             niche("my_channel.py", "Kênh của tôi", "📺"),
             niche("channel_doctor.py", "Bác sĩ kênh", "🩺"),
             niche("seo_optimizer.py", "Tối ưu video (SEO)", "🚀"),
         ],
-        "Dữ liệu": [
+        "Khu TikTok Affiliate": [
+            niche("affiliate_hub.py", "Trung tâm Affiliate", "🛒"),
+            niche("product_hunter.py", "Săn sản phẩm win", "🏆"),
+            niche("affiliate_channels.py", "Kênh affiliate làm tốt", "👥"),
+            niche("tiktok_channel_analysis.py", "Phân tích kênh TikTok", "📊"),
+            niche("sales_teardown.py", "Mổ băng video bán hàng", "🔬"),
+            niche("tiktok_trends.py", "Xu hướng TikTok", "📈"),
+            niche("sales_script.py", "Kịch bản video bán hàng", "🛍️"),
+            niche("affiliate_calendar.py", "Lịch đăng video", "📅"),
+        ],
+        "Dữ liệu & Tài khoản": [
             niche("data_center.py", "Ngách đã lưu & kênh", "🗂️"),
+            niche("connect_api.py", "Kết nối API", "🔌"),
+            niche("wallet.py", "Chi phí API", "💳"),
         ],
     })
     pg.run()
