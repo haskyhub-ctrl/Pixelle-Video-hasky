@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Optional
 from loguru import logger
 from .schema import PixelleVideoConfig
-from .loader import load_config_dict, save_config_dict
+from .loader import apply_env_overrides, load_config_dict, save_config_dict
 
 
 class ConfigManager:
@@ -46,7 +46,7 @@ class ConfigManager:
     
     def _load(self) -> PixelleVideoConfig:
         """Load configuration from file"""
-        data = load_config_dict(str(self.config_path))
+        data = apply_env_overrides(load_config_dict(str(self.config_path)))
         config = PixelleVideoConfig(**data)
         
         # Validate template path exists

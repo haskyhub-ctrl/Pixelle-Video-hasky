@@ -15,9 +15,55 @@ Configuration loader - Pure YAML
 
 Handles loading and saving configuration from/to YAML files.
 """
+import os
 from pathlib import Path
+
 import yaml
 from loguru import logger
+
+
+def _load_dotenv(path: str = ".env") -> None:
+    """Load KEY=VALUE lines from a .env file into os.environ (no overwrite)."""
+    env_file = Path(path)
+    if not env_file.exists():
+        return
+    try:
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+    except Exception as e:
+        logger.warning(f"Failed to read {path}: {e}")
+
+
+# Environment variable -> nested config path. Lets users run locally with a
+# .env file instead of editing config.yaml, and keeps secrets out of the repo.
+_ENV_MAP = {
+    "LLM_API_KEY": ("llm", "api_key"),
+    "LLM_BASE_URL": ("llm", "base_url"),
+    "LLM_MODEL": ("llm", "model"),
+    "YOUTUBE_API_KEY": ("niche", "youtube_api_key"),
+    "TIKHUB_API_KEY": ("niche", "tikhub_api_key"),
+    "NICHE_DEFAULT_REGION": ("niche", "default_region"),
+    "NICHE_DEFAULT_LANGUAGE": ("niche", "default_language"),
+}
+
+
+def apply_env_overrides(data: dict) -> dict:
+    """Overlay environment variables (and .env) onto a config dict."""
+    _load_dotenv()
+    for env_key, (section, field) in _ENV_MAP.items():
+        value = os.environ.get(env_key)
+        if value:
+            data.setdefault(section, {})
+            if isinstance(data[section], dict):
+                data[section][field] = value
+    return data
 
 
 def load_config_dict(config_path: str = "config.yaml") -> dict:
