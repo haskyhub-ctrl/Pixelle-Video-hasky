@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="vi" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "InterV"; src: url("assets/Inter-Regular.otf"); font-weight: 400; }
+      @font-face { font-family: "InterV"; src: url("assets/Inter-Bold.otf"); font-weight: 700; }
+      @font-face { font-family: "InterV"; src: url("assets/Inter-Black.otf"); font-weight: 900; }
+      :root {
+        --bg: #14110f;
+        --cream: #f3e9d8;
+        --amber: #f2a541;
+        --muted: #9a8e80;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: "InterV", sans-serif;
+        color: var(--cream);
+      }
+      #bg {
+        position: absolute;
+        inset: -80px;
+        background:
+          radial-gradient(900px 900px at 30% 25%, rgba(242, 165, 65, 0.16), transparent 70%),
+          radial-gradient(800px 800px at 80% 80%, rgba(180, 90, 60, 0.14), transparent 70%),
+          var(--bg);
+      }
+      #progress {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        top: 96px;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(243, 233, 216, 0.12);
+        overflow: hidden;
+      }
+      #progress-fill { width: 100%; height: 100%; background: var(--amber); transform-origin: left center; }
+      .scene { position: absolute; inset: 0; }
+      .inner {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        top: 260px;
+        height: 1100px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+      }
+      .eyebrow {
+        font-size: 34px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--amber);
+      }
+      .big {
+        font-size: 300px;
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin-top: 24px;
+        font-variant-numeric: tabular-nums;
+      }
+      .unit { font-size: 64px; font-weight: 700; color: var(--cream); margin-top: 8px; }
+      .unit .dim { color: var(--muted); font-weight: 400; }
+      .unit-swap { position: relative; height: 80px; width: 100%; }
+      .unit-swap .unit { position: absolute; left: 0; top: 0; margin: 0; }
+      .pages { display: flex; gap: 10px; margin-top: 96px; height: 150px; align-items: flex-end; }
+      .page { width: 70px; height: 150px; border-radius: 6px 10px 10px 6px; background: var(--cream); opacity: 0.9; }
+      .shelf-wrap { width: 100%; margin-top: 64px; }
+      .shelf { display: flex; gap: 8px; align-items: flex-end; height: 460px; }
+      .book { flex: 1; border-radius: 6px 6px 2px 2px; position: relative; }
+      .book::after {
+        content: "";
+        position: absolute;
+        left: 22%;
+        right: 22%;
+        top: 18%;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.35);
+      }
+      .plank { height: 18px; border-radius: 4px; background: #5a3d2b; margin-top: 0; transform-origin: left center; }
+      .sub { font-size: 60px; font-weight: 700; line-height: 1.2; margin-top: 56px; }
+      .sub em { font-style: normal; color: var(--amber); }
+      .line-mask { overflow: hidden; padding-bottom: 12px; }
+      .headline { display: block; font-size: 150px; font-weight: 900; line-height: 1.02; letter-spacing: -0.035em; }
+      .headline.accent { color: var(--amber); }
+      .only { display: inline-block; margin-top: 64px; font-size: 84px; font-weight: 700; }
+      .underline { height: 12px; border-radius: 6px; background: var(--amber); margin-top: 10px; transform-origin: left center; }
+      .caption {
+        position: absolute;
+        left: 80px;
+        right: 80px;
+        bottom: 260px;
+        font-size: 50px;
+        font-weight: 700;
+        line-height: 1.35;
+        color: var(--cream);
+        text-align: center;
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="16" data-width="1080" data-height="1920">
+      <div id="bg"></div>
+      <div id="progress"><div id="progress-fill"></div></div>
+
+      <section id="s1" class="scene clip" data-start="0" data-duration="6.4" data-track-index="1">
+        <div class="inner" id="s1-inner">
+          <div class="eyebrow" id="s1-eyebrow">Thói quen nhỏ</div>
+          <div class="big" id="s1-count">10</div>
+          <div class="unit-swap">
+            <div class="unit" id="s1-unit-a">trang <span class="dim">/ ngày</span></div>
+            <div class="unit" id="s1-unit-b">trang <span class="dim">/ năm</span></div>
+          </div>
+          <div class="pages" id="s1-pages">
+            <div class="page"></div><div class="page"></div><div class="page"></div><div class="page"></div><div class="page"></div>
+            <div class="page"></div><div class="page"></div><div class="page"></div><div class="page"></div><div class="page"></div>
+          </div>
+        </div>
+        <div class="caption" id="s1-cap">Mỗi ngày đọc 10 trang sách. Nghe thì nhỏ, nhưng một năm là hơn 3.000 trang.</div>
+      </section>
+
+      <section id="s2" class="scene clip" data-start="6.4" data-duration="4.9" data-track-index="1">
+        <div class="inner" id="s2-inner">
+          <div class="eyebrow" id="s2-eyebrow">Sau một năm</div>
+          <div class="big" id="s2-count">0</div>
+          <div class="unit" id="s2-unit">cuốn sách</div>
+          <div class="shelf-wrap">
+            <div class="shelf" id="s2-shelf"></div>
+            <div class="plank" id="s2-plank"></div>
+          </div>
+          <div class="sub" id="s2-sub">đủ để <em>thay đổi</em> cách bạn nghĩ.</div>
+        </div>
+        <div class="caption" id="s2-cap">3.000 trang là khoảng 15 cuốn sách, đủ để thay đổi cách bạn nghĩ.</div>
+      </section>
+
+      <section id="s3" class="scene clip" data-start="11.3" data-duration="4.7" data-track-index="1">
+        <div class="inner" id="s3-inner">
+          <div class="line-mask" data-layout-allow-overflow><span class="headline" id="s3-l1">Bắt đầu</span></div>
+          <div class="line-mask" data-layout-allow-overflow><span class="headline accent" id="s3-l2">từ hôm nay.</span></div>
+          <div id="s3-only-wrap">
+            <div class="only" id="s3-only">Chỉ 10 trang thôi.</div>
+            <div class="underline" id="s3-underline"></div>
+          </div>
+        </div>
+        <div class="caption" id="s3-cap">Bắt đầu từ hôm nay. Chỉ 10 trang thôi.</div>
+      </section>
+
+      <audio id="bgm" src="assets/bgm.mp3" data-start="0" data-duration="16" data-track-index="5" data-volume="0.18"></audio>
+      <audio id="vo1" src="assets/vo1.mp3" data-start="0.3" data-duration="5.86" data-track-index="4" data-volume="1"></audio>
+      <audio id="vo2" src="assets/vo2.mp3" data-start="6.6" data-duration="4.44" data-track-index="4" data-volume="1"></audio>
+      <audio id="vo3" src="assets/vo3.mp3" data-start="11.5" data-duration="3.96" data-track-index="4" data-volume="1"></audio>
+    </div>
+    <script>
+      // Book spines: fixed palette and heights, no randomness (deterministic render).
+      const COLORS = ["#c8553d", "#f2a541", "#588b8b", "#e9d8a6", "#8c5e58", "#3d5a80", "#ee9b00",
+                      "#94a89a", "#bb3e03", "#f3e9d8", "#6d597a", "#e07a5f", "#81b29a", "#d4a373", "#264653"];
+      const HEIGHTS = [380, 430, 350, 410, 460, 370, 420, 340, 400, 450, 360, 415, 390, 440, 375];
+      const shelf = document.getElementById("s2-shelf");
+      COLORS.forEach((c, i) => {
+        const b = document.createElement("div");
+        b.className = "book";
+        b.id = "book-" + i;
+        b.style.background = c;
+        b.style.height = HEIGHTS[i] + "px";
+        shelf.appendChild(b);
+      });
+
+      const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      const tl = gsap.timeline({ paused: true });
+
+      // Global layers
+      tl.fromTo("#bg", { scale: 1 }, { scale: 1.08, x: -30, duration: 16, ease: "none" }, 0);
+      tl.fromTo("#progress-fill", { scaleX: 0 }, { scaleX: 1, duration: 16, ease: "none" }, 0);
+
+      // Scene 1: 10 pages a day -> 3,650 a year
+      tl.fromTo("#s1-eyebrow", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.2);
+      tl.fromTo("#s1-count", { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power4.out" }, 0.35);
+      tl.fromTo("#s1-unit-a", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.55);
+      tl.fromTo("#s1-pages .page", { y: 60, opacity: 0, rotation: -8 },
+        { y: 0, opacity: 0.9, rotation: 0, duration: 0.45, ease: "back.out(2)", stagger: 0.08 }, 0.8);
+      tl.fromTo("#s1-cap", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, 0.3);
+
+      const c1 = { v: 10 };
+      tl.to(c1, { v: 3650, duration: 1.5, ease: "power2.inOut",
+        onUpdate: () => { document.getElementById("s1-count").textContent = fmt(c1.v); } }, 3.2);
+      tl.to("#s1-count", { color: "#f2a541", duration: 0.4 }, 4.5);
+      tl.to("#s1-unit-a", { y: -30, opacity: 0, duration: 0.3, ease: "power2.in" }, 3.2);
+      tl.fromTo("#s1-unit-b", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out" }, 3.45);
+      tl.to("#s1-pages .page", { backgroundColor: "#f2a541", y: -16, duration: 0.35, ease: "power2.out", stagger: 0.1, yoyo: true, repeat: 1 }, 3.3);
+      tl.to("#s1-inner", { y: -60, opacity: 0, duration: 0.4, ease: "power2.in" }, 5.95);
+      tl.to("#s1-cap", { opacity: 0, duration: 0.3 }, 6.05);
+
+      // Scene 2: books stack onto a shelf (scene-local t + 6.4)
+      const S2 = 6.4;
+      tl.fromTo("#s2-eyebrow", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, S2 + 0.1);
+      tl.fromTo("#s2-count", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power4.out" }, S2 + 0.2);
+      tl.fromTo("#s2-unit", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, S2 + 0.35);
+      tl.fromTo("#s2-plank", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power3.out" }, S2 + 0.3);
+      tl.fromTo("#s2-shelf .book", { y: -900, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: "bounce.out", stagger: 0.13 }, S2 + 0.5);
+      const c2 = { v: 0 };
+      tl.to(c2, { v: 15, duration: 0.13 * 14 + 0.4, ease: "none",
+        onUpdate: () => { document.getElementById("s2-count").textContent = fmt(c2.v); } }, S2 + 0.6);
+      tl.fromTo("#s2-sub", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, S2 + 2.6);
+      tl.to("#s2-shelf .book", { rotation: (i) => (i % 2 ? 2 : -2), duration: 0.5, ease: "sine.inOut", stagger: 0.02, transformOrigin: "bottom center" }, S2 + 2.7);
+      tl.fromTo("#s2-cap", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, S2 + 0.2);
+      tl.to("#s2-inner", { y: -60, opacity: 0, duration: 0.4, ease: "power2.in" }, S2 + 4.45);
+      tl.to("#s2-cap", { opacity: 0, duration: 0.3 }, S2 + 4.55);
+
+      // Scene 3: call to action (scene-local t + 11.3)
+      const S3 = 11.3;
+      tl.fromTo("#s3-l1", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, S3 + 0.2);
+      tl.fromTo("#s3-l2", { yPercent: 110 }, { yPercent: 0, duration: 0.7, ease: "power4.out" }, S3 + 0.45);
+      tl.fromTo("#s3-only", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, S3 + 2.0);
+      tl.fromTo("#s3-underline", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power3.inOut" }, S3 + 2.4);
+      tl.fromTo("#s3-cap", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, S3 + 0.2);
+      tl.fromTo("#s3-inner", { scale: 1 }, { scale: 1.04, duration: 4.5, ease: "none", transformOrigin: "left center" }, S3);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -74,3 +74,9 @@ examples/
 repositories/
 
 *.out
+
+# Vendored Claude Code skills (.claude/skills) ship their own lib/, examples/ and SFX
+!.claude/skills/**/lib/
+!.claude/skills/**/examples/
+!.claude/skills/**/*.mp3
+!motion/**/assets/*.mp3
