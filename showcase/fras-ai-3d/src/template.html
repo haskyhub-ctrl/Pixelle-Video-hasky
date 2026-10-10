@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FRAS-AI · Đánh giá nguy cơ cháy nổ</title>
+<meta name="description" content="Hệ thống ứng dụng AI trong khảo sát, đánh giá, cảnh báo nguy cơ cháy, nổ. Miễn phí, ẩn danh, có kết quả sau 5 phút.">
+<meta name="theme-color" content="#060b16">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
+<style>
+/*
+  Design read: public-safety service landing for households and small businesses in Bắc Ninh,
+  premium "night scan" language, brand red as the single accent.
+  Dials: DESIGN_VARIANCE 6 / MOTION_INTENSITY 8 / VISUAL_DENSITY 4.
+  Theme: dark-locked on purpose (the 3D scan scene is the brand moment).
+  Shape system: interactive = full pill, surfaces = 20px, small chips = 12px.
+  Z-index scale: canvas 0, labels 1, content 2, nav 10.
+*/
+:root{
+  --bg:#060b16; --bg-2:#09111f; --surface:#0e182c; --surface-2:#132140;
+  --line:rgba(160,185,230,.13); --line-2:rgba(160,185,230,.24);
+  --text:#eef2f9; --muted:#a3b0c8; --dim:#7b88a3;
+  --accent:#C0202A; --accent-hi:#F0474D; --navy:#1A3A6B;
+  --ok:#2fd27a; --warn:#ffb02e;
+  --r-surface:20px; --r-chip:12px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --gutter:clamp(16px,4vw,48px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:"Be Vietnam Pro",system-ui,sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img,svg{display:block}
+.wrap{max-width:1320px;margin:0 auto;padding:0 var(--gutter)}
+:focus-visible{outline:2px solid var(--accent-hi);outline-offset:3px;border-radius:8px}
+
+/* grain on a fixed pseudo layer only */
+body::after{content:"";position:fixed;inset:0;z-index:11;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+svg.ic{width:1em;height:1em;display:inline-block;flex:none;vertical-align:-.14em}
+/* ---------- 3D layer ---------- */
+#scene{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;opacity:0;transition:opacity 1.6s var(--ease)}
+#scene.ready{opacity:1}
+/* poster fallback when WebGL is unavailable */
+body.no-webgl{background:radial-gradient(70% 60% at 75% 60%,rgba(192,32,42,.28),transparent 70%),radial-gradient(60% 60% at 80% 20%,rgba(26,58,107,.55),transparent 70%),var(--bg)}
+body.no-webgl #scene{display:none}
+#labels{position:fixed;inset:0;z-index:1;pointer-events:none}
+.hs-label{position:absolute;left:0;top:0;opacity:0;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;
+  background:rgba(8,14,28,.78);border:1px solid var(--line-2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  font-size:12.5px;font-weight:600;color:var(--text);will-change:transform,opacity}
+.hs-label i{font-size:15px}
+.hs-label small{font-weight:500;color:var(--muted);font-size:11.5px}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:10;height:68px;display:flex;align-items:center;
+  background:linear-gradient(to bottom,rgba(6,11,22,.86),rgba(6,11,22,0));transition:background .4s var(--ease)}
+.nav.solid{background:rgba(6,11,22,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:28px;width:100%}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.02em;font-size:19px}
+.brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:19px;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.brand span b{color:var(--accent-hi);font-weight:800}
+.nav-links{display:flex;gap:26px;margin-left:auto;font-size:14.5px;color:var(--muted);font-weight:500}
+.nav-links a{transition:color .25s}
+.nav-links a:hover{color:var(--text)}
+.nav-actions{display:flex;gap:10px;align-items:center}
+
+.btn{--mx:0px;--my:0px;display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:nowrap;
+  height:48px;padding:0 24px;border-radius:999px;font-weight:600;font-size:15px;letter-spacing:-.005em;
+  transform:translate(var(--mx),var(--my));transition:transform .45s var(--ease),background .25s,border-color .25s,box-shadow .25s}
+.btn:active{transform:translate(var(--mx),calc(var(--my) + 1px)) scale(.98)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 30px -10px rgba(192,32,42,.7)}
+.btn-primary:hover{background:#d0242f}
+.btn-primary i{transition:transform .35s var(--ease)}
+.btn-primary:hover i{transform:translateX(3px)}
+.btn-ghost{border:1px solid var(--line-2);color:var(--text);background:rgba(14,24,44,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.btn-ghost:hover{border-color:rgba(200,215,245,.45)}
+.btn-sm{height:40px;padding:0 18px;font-size:14px}
+.btn-hot{border:1px solid rgba(240,71,77,.5);color:#ffd9da;background:rgba(192,32,42,.12)}
+.btn-hot b{font-size:16px;color:#fff}
+
+/* ---------- hero + journey ---------- */
+#journey{position:relative;z-index:2}
+.hero{min-height:100dvh;display:flex;align-items:center;padding:96px 0 64px;
+  background:linear-gradient(90deg,rgba(6,11,22,.9) 0%,rgba(6,11,22,.55) 38%,rgba(6,11,22,0) 62%)}
+.hero-copy{max-width:780px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:22px}
+.eyebrow i{color:var(--accent-hi);font-size:16px}
+h1{font-size:clamp(2.3rem,4.4vw,3.45rem);line-height:1.1;letter-spacing:-.035em;font-weight:800;padding-bottom:4px}
+h1 em{font-style:italic;color:var(--accent-hi)}
+.lede{margin-top:22px;font-size:clamp(1.02rem,1.3vw,1.15rem);color:var(--muted);max-width:44ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+
+.story{position:relative;height:400dvh}
+.story-pin{position:sticky;top:0;height:100dvh;display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(6,11,22,.92) 0%,rgba(6,11,22,.6) 34%,rgba(6,11,22,0) 58%)}
+.story-panel{position:relative;max-width:470px;width:100%}
+.story h2{font-size:15px;font-weight:600;color:var(--muted);margin-bottom:26px;display:flex;align-items:center;gap:14px}
+.ticks{display:flex;gap:6px}
+.ticks span{width:26px;height:3px;border-radius:3px;background:var(--line-2);transition:background .4s var(--ease),width .4s var(--ease)}
+.ticks span.on{background:var(--accent-hi);width:38px}
+.steps{position:relative;min-height:300px}
+.step{position:absolute;inset:0 0 auto 0;opacity:0;transform:translateY(22px);transition:opacity .6s var(--ease),transform .6s var(--ease);pointer-events:none}
+.step.on{opacity:1;transform:none;pointer-events:auto}
+.step .ico{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:26px;margin-bottom:22px;
+  background:var(--surface-2);border:1px solid var(--line-2);color:var(--text)}
+.step h3{font-size:clamp(1.9rem,3.4vw,2.8rem);line-height:1.12;letter-spacing:-.03em;font-weight:800}
+.step p{margin-top:14px;color:var(--muted);font-size:1.05rem;max-width:42ch}
+.step .meta{margin-top:20px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--text);
+  padding:8px 14px;border-radius:var(--r-chip);background:rgba(19,33,64,.7);border:1px solid var(--line)}
+.step .meta i{color:var(--accent-hi)}
+.legend{display:flex;gap:16px;margin-top:18px;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend b{width:10px;height:10px;border-radius:50%}
+
+/* ---------- solid sections ---------- */
+.solid{position:relative;z-index:2;background:var(--bg)}
+section.block{padding:clamp(80px,11vw,140px) 0}
+.h2{font-size:clamp(2rem,4vw,3.25rem);line-height:1.12;letter-spacing:-.03em;font-weight:800;max-width:20ch}
+.sub{margin-top:16px;color:var(--muted);font-size:1.08rem;max-width:58ch}
+
+/* stats */
+.stats{border-top:1px solid var(--line)}
+.stat-grid{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:clamp(24px,4vw,64px);margin-top:56px;align-items:end}
+.stat .n{font-size:clamp(3rem,7.5vw,6.4rem);line-height:1;font-weight:800;letter-spacing:-.05em;font-variant-numeric:tabular-nums}
+.stat:first-child .n{color:var(--accent-hi)}
+.stat .n small{font-size:.38em;letter-spacing:-.02em;margin-left:6px;color:var(--muted);font-weight:700}
+.stat p{margin-top:12px;color:var(--muted);font-size:15px;max-width:26ch}
+.pull{margin-top:clamp(64px,8vw,104px);display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;max-width:900px}
+.pull i{font-size:44px;color:var(--accent-hi)}
+.pull blockquote{font-size:clamp(1.35rem,2.4vw,1.9rem);line-height:1.38;font-weight:600;letter-spacing:-.02em}
+.pull blockquote em{font-style:italic;color:var(--accent-hi)}
+.src{margin-top:18px;font-size:13px;color:var(--dim)}
+
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(210px,auto);gap:14px;margin-top:56px}
+.cell{position:relative;overflow:hidden;border-radius:var(--r-surface);padding:26px;border:1px solid var(--line);background:var(--surface);
+  display:flex;flex-direction:column;justify-content:flex-end;transition:border-color .35s,transform .5s var(--ease)}
+.cell:hover{border-color:var(--line-2);transform:translateY(-3px)}
+.cell .ci{position:absolute;top:24px;left:26px;font-size:30px;color:var(--text);opacity:.9}
+.cell h3{font-size:1.18rem;font-weight:700;letter-spacing:-.015em;line-height:1.3}
+.cell p{margin-top:8px;color:var(--muted);font-size:14.5px}
+.cell.big{grid-column:span 2;grid-row:span 2;padding:clamp(28px,4vw,48px);
+  background:radial-gradient(120% 90% at 85% 10%,rgba(192,32,42,.42),rgba(192,32,42,0) 60%),
+             radial-gradient(80% 70% at 0% 100%,rgba(26,58,107,.6),rgba(26,58,107,0) 70%),var(--surface)}
+.cell.big .pct{font-size:clamp(5rem,12vw,10rem);line-height:.9;font-weight:800;letter-spacing:-.06em}
+.cell.big h3{font-size:clamp(1.4rem,2.4vw,2rem);max-width:20ch;margin-top:14px}
+.cell.big p{font-size:1rem;max-width:46ch;margin-top:14px}
+.cell.tint-navy{background:linear-gradient(160deg,rgba(26,58,107,.75),rgba(14,24,44,1) 70%)}
+.cell.tint-red{background:linear-gradient(200deg,rgba(192,32,42,.32),rgba(14,24,44,1) 65%)}
+.cell.lines{background:repeating-linear-gradient(135deg,rgba(160,185,230,.05) 0 2px,transparent 2px 14px),var(--surface)}
+
+/* testimonials marquee (the one marquee on the page) */
+.voices{padding-bottom:clamp(80px,10vw,120px)}
+.marquee{margin-top:52px;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.track{display:flex;gap:16px;width:max-content;animation:slide 60s linear infinite}
+.marquee:hover .track{animation-play-state:paused}
+@keyframes slide{to{transform:translateX(calc(-50% - 8px))}}
+.quote{width:380px;flex:none;padding:26px;border-radius:var(--r-surface);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:20px}
+.quote p{font-size:15.5px;line-height:1.55;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.who{display:flex;align-items:center;gap:12px;margin-top:auto}
+.av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:15px;background:var(--navy);color:#dbe6ff}
+.who b{display:block;font-size:14px}
+.who small{color:var(--muted);font-size:13px}
+
+/* commitments: sticky title + list */
+.commit{display:grid;grid-template-columns:5fr 7fr;gap:clamp(32px,6vw,96px);align-items:start}
+.commit-head{position:sticky;top:110px}
+.seal{margin-top:30px;display:flex;gap:14px;align-items:center;padding:18px 20px;border-radius:var(--r-surface);background:var(--surface);border:1px solid var(--line);max-width:420px}
+.seal i{font-size:30px;color:var(--accent-hi)}
+.seal p{font-size:14px;color:var(--muted)}
+.seal b{color:var(--text);display:block;font-size:15px}
+.promises{display:flex;flex-direction:column}
+.promise{display:grid;grid-template-columns:64px 1fr;gap:20px;padding:30px 0;border-top:1px solid var(--line)}
+.promise:last-child{border-bottom:1px solid var(--line)}
+.promise .pi{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:24px;background:var(--surface-2);color:var(--text);transition:background .35s,color .35s}
+.promise:hover .pi{background:var(--accent);color:#fff}
+.promise h3{font-size:1.35rem;font-weight:700;letter-spacing:-.02em}
+.promise p{margin-top:6px;color:var(--muted);max-width:52ch}
+
+/* final CTA poster */
+.final{text-align:center;padding:clamp(100px,13vw,170px) 0;overflow:hidden;position:relative;
+  background:radial-gradient(60% 70% at 50% 110%,rgba(192,32,42,.38),rgba(192,32,42,0) 70%),var(--bg)}
+.final .h2{margin:0 auto;max-width:22ch;font-size:clamp(2.2rem,5vw,4rem)}
+.final .sub{margin:20px auto 0}
+.final .cta-row{justify-content:center}
+.hotline{margin:56px auto 0;display:inline-flex;align-items:center;gap:18px;padding:14px 26px 14px 14px;border-radius:999px;border:1px solid rgba(240,71,77,.35);background:rgba(192,32,42,.1)}
+.hotline .ring{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:#fff;font-size:24px;position:relative}
+.hotline .ring::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(240,71,77,.6);animation:ping 2.2s var(--ease) infinite}
+@keyframes ping{0%{transform:scale(.85);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.hotline b{font-size:2rem;font-weight:800;letter-spacing:-.03em;line-height:1}
+.hotline span{text-align:left;font-size:13.5px;color:var(--muted);line-height:1.35}
+
+footer{position:relative;z-index:2;background:var(--bg-2);border-top:1px solid var(--line);padding:56px 0 40px;font-size:14px;color:var(--muted)}
+.foot{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px}
+.foot h4{color:var(--text);font-size:14.5px;margin-bottom:12px}
+.foot a:hover{color:var(--text)}
+.foot li{list-style:none;margin:6px 0}
+.legal{margin-top:44px;padding-top:24px;border-top:1px solid var(--line);font-size:13px;color:var(--dim)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0) * 80ms)}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:1024px){
+  .nav-links{display:none}
+}
+@media (max-width:767px){
+  .br-wide{display:none}
+  .nav-actions .btn-primary{display:none}
+  .hero{align-items:flex-end;padding-bottom:56px;background:linear-gradient(0deg,rgba(6,11,22,.96) 0%,rgba(6,11,22,.75) 45%,rgba(6,11,22,.1) 80%)}
+  .story-pin{align-items:flex-end;padding-bottom:48px;background:linear-gradient(0deg,rgba(6,11,22,.97) 0%,rgba(6,11,22,.8) 42%,rgba(6,11,22,0) 72%)}
+  .steps{min-height:270px}
+  .cta-row .btn{flex:1 1 100%}
+  .stat-grid{grid-template-columns:1fr;gap:40px}
+  .bento{grid-template-columns:1fr}
+  .cell.big{grid-column:auto;grid-row:auto}
+  .commit{grid-template-columns:1fr}
+  .commit-head{position:static}
+  .promise{grid-template-columns:52px 1fr;gap:16px}
+  .foot{grid-template-columns:1fr}
+  .quote{width:300px}
+  .hs-label small{display:none}
+}
+
+/* ---------- reduced motion: static, fully readable ---------- */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .rv{opacity:1;transform:none;transition:none}
+  .story{height:auto}
+  .story-pin{position:relative;height:auto;padding:96px 0}
+  .steps{min-height:0;display:grid;gap:48px}
+  .step{position:relative;opacity:1;transform:none}
+  .ticks{display:none}
+  .track{animation:none}
+  .marquee{overflow-x:auto}
+  .hotline .ring::after{animation:none}
+  .btn{transition:none}
+}
+</style>
+</head>
+<body>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="labels" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="FRAS-AI trang chủ">
+      <span class="brand-mark"><i class="ph-fill ph-shield-check"></i></span>
+      <span>FRAS<b>·AI</b></span>
+    </a>
+    <nav class="nav-links" aria-label="Điều hướng chính">
+      <a href="#story">Cách hoạt động</a>
+      <a href="#risks">Nguy cơ tiềm ẩn</a>
+      <a href="#commit">Cam kết</a>
+      <a href="https://fras-ai.com/map.html">Bản đồ nguy cơ</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="btn btn-sm btn-hot" href="tel:114" aria-label="Gọi báo cháy 114"><i class="ph-fill ph-phone-call"></i><b>114</b></a>
+      <a class="btn btn-sm btn-primary magnetic" href="https://fras-ai.com/survey.html">Bắt đầu khảo sát</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <div id="journey">
+    <section class="hero" aria-label="Giới thiệu">
+      <div class="wrap" style="width:100%">
+        <div class="hero-copy">
+          <p class="eyebrow rv"><i class="ph-fill ph-seal-check"></i>Sáng kiến cấp tỉnh 2026</p>
+          <h1 class="rv" style="--i:1">Thấy nguy cơ cháy<br class="br-wide"> <em>trước</em> khi nó thành thảm họa.</h1>
+          <p class="lede rv" style="--i:2">AI đối chiếu hơn 14.000 vụ cháy thực tế, chỉ ra điểm nguy hiểm trong nhà bạn sau 5 phút.</p>
+          <div class="cta-row rv" style="--i:3">
+            <a class="btn btn-primary magnetic" href="https://fras-ai.com/survey.html">Bắt đầu khảo sát <i class="ph-bold ph-arrow-right"></i></a>
+            <a class="btn btn-ghost" href="https://fras-ai.com/#chat"><i class="ph ph-chat-circle-text"></i>Hỏi trợ lý Chi</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story" id="story" aria-label="Cách thức hoạt động">
+      <div class="story-pin">
+        <div class="wrap" style="width:100%">
+          <div class="story-panel">
+            <h2>Cách thức hoạt động <span class="ticks" aria-hidden="true"><span></span><span></span><span></span><span></span></span></h2>
+            <div class="steps">
+              <article class="step">
+                <div class="ico"><i class="ph ph-list-checks"></i></div>
+                <h3>Khai báo tình trạng cơ sở</h3>
+                <p>Trả lời 20-25 câu hỏi trắc nghiệm đơn giản. Không cần kiến thức chuyên môn về PCCC.</p>
+                <span class="meta"><i class="ph ph-clock"></i>Khoảng 2-5 phút</span>
+              </article>
+              <article class="step">
+                <div class="ico"><i class="ph ph-scan"></i></div>
+                <h3>AI quét và phân tích</h3>
+                <p>Đối chiếu với cơ sở dữ liệu hơn 14.000 vụ cháy thực tế, phân tích hơn 60 yếu tố nguy cơ.</p>
+                <span class="meta"><i class="ph ph-lightning"></i>Xử lý trong vòng 10 giây</span>
+              </article>
+              <article class="step">
+                <div class="ico"><i class="ph ph-file-text"></i></div>
+                <h3>Nhận báo cáo bằng màu sắc</h3>
+                <p>Thấy ngay điểm nào nguy hiểm nhất, kèm giải pháp khắc phục theo thứ tự ưu tiên và chi phí.</p>
+                <div class="legend"><span><b style="background:#ff4b4b"></b>Nguy cơ cao</span><span><b style="background:var(--warn)"></b>Cần chú ý</span><span><b style="background:var(--ok)"></b>An toàn</span></div>
+              </article>
+              <article class="step">
+                <div class="ico"><i class="ph ph-chart-line-up"></i></div>
+                <h3>Khắc phục và theo dõi định kỳ</h3>
+                <p>Khảo sát lại để so sánh giữa các kỳ, biết hạng mục nào đã xử lý và nguy cơ nào mới phát sinh.</p>
+                <span class="meta"><i class="ph ph-shield-check"></i>Đánh giá định kỳ, an toàn bền vững</span>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="solid">
+    <section class="block stats" aria-label="Thống kê cháy nổ">
+      <div class="wrap">
+        <h2 class="h2 rv">Cháy nổ không báo trước. Nhưng luôn có dấu hiệu.</h2>
+        <div class="stat-grid">
+          <div class="stat rv"><div class="n" data-count="14689">0</div><p>vụ cháy trên toàn quốc giai đoạn 2021-2025</p></div>
+          <div class="stat rv" style="--i:1"><div class="n" data-count="531">0</div><p>người tử vong và 512 người bị thương</p></div>
+          <div class="stat rv" style="--i:2"><div class="n" data-count="3330.7" data-dec="1">0<small>tỷ</small></div><p>đồng thiệt hại tài sản ước tính</p></div>
+        </div>
+        <div class="pull rv">
+          <i class="ph-fill ph-quotes" aria-hidden="true"></i>
+          <div>
+            <blockquote>Khoảng cách giữa <em>nguy cơ</em> và <em>thảm họa</em> thường chỉ là một hành động nhỏ chưa được thực hiện.</blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="risks" aria-label="Nguy cơ tiềm ẩn" style="padding-top:0">
+      <div class="wrap">
+        <h2 class="h2 rv">Nguy cơ ở ngay trước mắt, nhưng bạn không nhìn thấy.</h2>
+        <p class="sub rv" style="--i:1">Điều nguy hiểm nhất không phải điều bạn không biết, mà là điều bạn đã quen thấy đến mức bỏ qua.</p>
+        <div class="bento">
+          <article class="cell big rv">
+            <div class="pct">95%</div>
+            <h3>cơ sở cho rằng mình đang an toàn, cho đến khi kiểm tra.</h3>
+            <p>Phần lớn vụ cháy có dấu hiệu cảnh báo trước 3-6 tháng nhưng không được chú ý. Hệ thống phát hiện chúng giúp bạn.</p>
+          </article>
+          <article class="cell tint-navy rv" style="--i:1">
+            <i class="ph ph-lightning ci"></i>
+            <h3>Dây điện cũ, lão hóa</h3><p>Vỏ bọc nứt, bị chuột gặm sau nhiều năm sử dụng.</p>
+          </article>
+          <article class="cell lines rv" style="--i:2">
+            <i class="ph ph-circuitry ci"></i>
+            <h3>Aptomat không phù hợp</h3><p>Sai công suất nên không ngắt khi quá tải.</p>
+          </article>
+          <article class="cell tint-red rv">
+            <i class="ph ph-plugs ci"></i>
+            <h3>Ổ cắm quá tải</h3><p>Cắm chồng nhiều thiết bị, dùng liên tục nhiều năm.</p>
+          </article>
+          <article class="cell rv" style="--i:1">
+            <i class="ph ph-fire-extinguisher ci"></i>
+            <h3>Bình chữa cháy hết hạn</h3><p>Hoặc không có, hoặc đặt ở góc khuất không ai biết.</p>
+          </article>
+          <article class="cell tint-navy rv" style="--i:2">
+            <i class="ph ph-door-open ci"></i>
+            <h3>Lối thoát bị chặn</h3><p>Cầu thang, cửa sau chất đầy hàng hóa và đồ đạc.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="voices" aria-label="Phản hồi từ người dân">
+      <div class="wrap">
+        <h2 class="h2 rv">Người dân nói gì về hệ thống</h2>
+      </div>
+      <div class="marquee">
+        <div class="track" id="track">
+          <figure class="quote"><p>“Làm xong mới biết ổ cắm bếp dùng 12 năm chưa thay. Hệ thống cảnh báo đỏ, tôi gọi thợ thay ngay hôm đó.”</p><figcaption class="who"><span class="av">L</span><span><b>Chị Lan</b><small>Chủ nhà trọ 5 tầng, Từ Sơn</small></span></figcaption></figure>
+          <figure class="quote"><p>“Cứ nghĩ có bình cứu hỏa là an toàn. Ai ngờ bình hết hạn 2 năm, cầu thang chất đầy thùng xốp.”</p><figcaption class="who"><span class="av">T</span><span><b>Anh Tuấn</b><small>Hộ gia đình, Đình Bảng</small></span></figcaption></figure>
+          <figure class="quote"><p>“Xưởng 200m² chỉ có 2 bình, lại để góc khuất. Giờ bổ sung thêm 4 bình và gắn biển chỉ dẫn.”</p><figcaption class="who"><span class="av">H</span><span><b>Anh Hùng</b><small>Chủ xưởng gỗ, Quế Võ</small></span></figcaption></figure>
+          <figure class="quote"><p>“Câu hỏi dễ hiểu, chọn có hoặc không. 5 phút là xong, vợ chồng ngồi đọc kết quả cùng nhau.”</p><figcaption class="who"><span class="av">M</span><span><b>Chị Mai</b><small>Kinh doanh tạp hóa, Yên Phong</small></span></figcaption></figure>
+          <figure class="quote"><p>“Làm khảo sát cho từng phòng trọ, phòng nào cũng ra vấn đề khác nhau. Sửa hết rồi, yên tâm hơn nhiều.”</p><figcaption class="who"><span class="av">Đ</span><span><b>Anh Đức</b><small>Chủ nhà trọ, Tiên Du</small></span></figcaption></figure>
+          <figure class="quote"><p>“Hệ thống nhắc lắp đầu báo khói và đèn thoát hiểm cho nhà có ông bà. Lắp ngay, đi làm đỡ lo.”</p><figcaption class="who"><span class="av">N</span><span><b>Chị Ngọc</b><small>Nhân viên văn phòng, TP. Bắc Ninh</small></span></figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="commit" aria-label="Cam kết" style="padding-top:clamp(40px,6vw,80px)">
+      <div class="wrap commit">
+        <div class="commit-head">
+          <p class="eyebrow rv"><i class="ph-fill ph-shield-star"></i>Công an tỉnh Bắc Ninh</p>
+          <h2 class="h2 rv" style="--i:1">5 cam kết của hệ thống</h2>
+          <div class="seal rv" style="--i:2">
+            <i class="ph-fill ph-medal"></i>
+            <p><b>Sáng kiến cấp tỉnh năm 2026</b>Phòng Cảnh sát PCCC và CNCH, Công an tỉnh Bắc Ninh.</p>
+          </div>
+        </div>
+        <div class="promises">
+          <div class="promise rv"><span class="pi"><i class="ph ph-hand-heart"></i></span><div><h3>100% miễn phí</h3><p>Không thu bất kỳ khoản phí nào, không quảng cáo sản phẩm.</p></div></div>
+          <div class="promise rv"><span class="pi"><i class="ph ph-lock-key"></i></span><div><h3>Bảo mật tuyệt đối</h3><p>Dữ liệu xử lý nội bộ bằng Local AI, không chia sẻ ra bên ngoài. Kết quả khảo sát ẩn danh.</p></div></div>
+          <div class="promise rv"><span class="pi"><i class="ph ph-flask"></i></span><div><h3>Chính xác khoa học</h3><p>Dựa trên hơn 14.000 vụ cháy thực tế và kết quả điều tra, xác minh nguyên nhân.</p></div></div>
+          <div class="promise rv"><span class="pi"><i class="ph ph-chat-circle-text"></i></span><div><h3>Đơn giản, dễ hiểu</h3><p>Không cần kiến thức chuyên môn, mọi người đều thực hiện được.</p></div></div>
+          <div class="promise rv"><span class="pi"><i class="ph ph-timer"></i></span><div><h3>Kết quả ngay lập tức</h3><p>Chỉ 5 phút trả lời, nhận ngay báo cáo chi tiết kèm giải pháp.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final" aria-label="Bắt đầu">
+      <div class="wrap">
+        <h2 class="h2 rv">Hành động hôm nay. An tâm lâu dài.</h2>
+        <p class="sub rv" style="--i:1">Để AI giúp bạn phát hiện nguy cơ trước khi quá muộn. Miễn phí, ẩn danh, 5 phút.</p>
+        <div class="cta-row rv" style="--i:2">
+          <a class="btn btn-primary magnetic" href="https://fras-ai.com/survey.html">Bắt đầu khảo sát <i class="ph-bold ph-arrow-right"></i></a>
+        </div>
+        <a class="hotline rv" style="--i:3" href="tel:114">
+          <span class="ring"><i class="ph-fill ph-phone-call"></i></span>
+          <b>114</b>
+          <span>Báo cháy khẩn cấp<br>Hoạt động 24/7</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a class="brand" href="#top"><span class="brand-mark"><i class="ph-fill ph-shield-check"></i></span><span>FRAS<b>·AI</b></span></a>
+        <p style="margin-top:16px;max-width:44ch">Phòng Cảnh sát PCCC và CNCH, Công an tỉnh Bắc Ninh. Đường Võ Nguyên Giáp, phường Tân Tiến, tỉnh Bắc Ninh.</p>
+      </div>
+      <div>
+        <h4>Dịch vụ</h4>
+        <ul>
+          <li><a href="https://fras-ai.com/survey.html">Khảo sát PCCC</a></li>
+          <li><a href="https://fras-ai.com/dashboard.html">Tra cứu kết quả</a></li>
+          <li><a href="https://fras-ai.com/map.html">Bản đồ nguy cơ</a></li>
+          <li><a href="https://fras-ai.com/improvement.html">Kế hoạch cải thiện</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Liên hệ</h4>
+        <ul>
+          <li><a href="tel:114">Báo cháy: 114</a></li>
+          <li><a href="tel:02223822114">PCCC Bắc Ninh: 0222 382 2114</a></li>
+          <li><a href="https://bacninh.gov.vn">bacninh.gov.vn</a></li>
+        </ul>
+      </div>
+    </div>
+    <p class="legal">© 2026 Công an tỉnh Bắc Ninh. Phát triển bởi Đại úy Đỗ Thành Long, Phòng Cảnh sát PCCC và CNCH.</p>
+  </div>
+</footer>
+
+<script>/*APP*/</script>
+</body>
+</html>
