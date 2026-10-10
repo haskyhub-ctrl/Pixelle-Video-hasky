@@ -53,6 +53,14 @@ body.no-webgl #scene{display:none}
   background:rgba(8,14,28,.78);border:1px solid var(--line-2);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
   font-size:12.5px;font-weight:600;color:var(--text);will-change:transform,opacity}
 .hs-label i{font-size:15px}
+.hs-pin{--c:#8fd3ff;margin:-16px 0 0 26px;transition:opacity .3s}
+.hs-pin.flip{translate:calc(-100% - 52px) 0}
+.hs-pin::before{content:"";position:absolute;left:-26px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--c);box-shadow:0 0 14px 2px var(--c)}
+.hs-pin::after{content:"";position:absolute;left:-31px;top:50%;width:20px;height:20px;margin-top:-10px;border-radius:50%;border:1.5px solid var(--c);animation:pin 1.8s var(--ease) infinite}
+.hs-pin.flip::before{left:auto;right:-26px}
+.hs-pin.flip::after{left:auto;right:-31px}
+.hs-pin .ic-wrap{display:flex}
+@keyframes pin{0%{transform:scale(.6);opacity:1}100%{transform:scale(2);opacity:0}}
 .hs-label small{font-weight:500;color:var(--muted);font-size:11.5px}
 
 /* ---------- nav ---------- */
@@ -151,6 +159,9 @@ section.block{padding:clamp(80px,11vw,140px) 0}
 .cell.big p{font-size:1rem;max-width:46ch;margin-top:14px}
 .cell.tint-navy{background:linear-gradient(160deg,rgba(26,58,107,.75),rgba(14,24,44,1) 70%)}
 .cell.tint-red{background:linear-gradient(200deg,rgba(192,32,42,.32),rgba(14,24,44,1) 65%)}
+.cell.photo{background:linear-gradient(180deg,rgba(6,11,22,.05) 0%,rgba(6,11,22,.55) 50%,rgba(6,11,22,.94) 100%),var(--img) center/cover no-repeat,var(--surface)}
+.cell.photo.big{background:linear-gradient(90deg,rgba(6,11,22,.92) 0%,rgba(6,11,22,.55) 55%,rgba(6,11,22,.15) 100%),linear-gradient(0deg,rgba(6,11,22,.7),transparent 50%),var(--img) center/cover no-repeat,var(--surface)}
+.cell.photo{transition:border-color .35s,transform .5s var(--ease),background-size 1.2s var(--ease)}
 .cell.lines{background:repeating-linear-gradient(135deg,rgba(160,185,230,.05) 0 2px,transparent 2px 14px),var(--surface)}
 
 /* testimonials marquee (the one marquee on the page) */
@@ -183,7 +194,7 @@ section.block{padding:clamp(80px,11vw,140px) 0}
 
 /* final CTA poster */
 .final{text-align:center;padding:clamp(100px,13vw,170px) 0;overflow:hidden;position:relative;
-  background:radial-gradient(60% 70% at 50% 110%,rgba(192,32,42,.38),rgba(192,32,42,0) 70%),var(--bg)}
+  background:radial-gradient(60% 70% at 50% 110%,rgba(192,32,42,.38),rgba(192,32,42,0) 70%),linear-gradient(180deg,var(--bg) 0%,rgba(6,11,22,.82) 30%,rgba(6,11,22,.86) 100%),url({{img:c_balcony}}) center/cover no-repeat,var(--bg)}
 .final .h2{margin:0 auto;max-width:22ch;font-size:clamp(2.2rem,5vw,4rem)}
 .final .sub{margin:20px auto 0}
 .final .cta-row{justify-content:center}
@@ -343,12 +354,12 @@ footer{position:relative;z-index:2;background:var(--bg-2);border-top:1px solid v
         <h2 class="h2 rv">Nguy cơ ở ngay trước mắt, nhưng bạn không nhìn thấy.</h2>
         <p class="sub rv" style="--i:1">Điều nguy hiểm nhất không phải điều bạn không biết, mà là điều bạn đã quen thấy đến mức bỏ qua.</p>
         <div class="bento">
-          <article class="cell big rv">
+          <article class="cell big photo rv" style="--img:url({{img:c_wires}})">
             <div class="pct">95%</div>
             <h3>cơ sở cho rằng mình đang an toàn, cho đến khi kiểm tra.</h3>
             <p>Phần lớn vụ cháy có dấu hiệu cảnh báo trước 3-6 tháng nhưng không được chú ý. Hệ thống phát hiện chúng giúp bạn.</p>
           </article>
-          <article class="cell tint-navy rv" style="--i:1">
+          <article class="cell photo rv" style="--i:1;--img:url({{img:c_lamp}})">
             <i class="ph ph-lightning ci"></i>
             <h3>Dây điện cũ, lão hóa</h3><p>Vỏ bọc nứt, bị chuột gặm sau nhiều năm sử dụng.</p>
           </article>
@@ -356,17 +367,17 @@ footer{position:relative;z-index:2;background:var(--bg-2);border-top:1px solid v
             <i class="ph ph-circuitry ci"></i>
             <h3>Aptomat không phù hợp</h3><p>Sai công suất nên không ngắt khi quá tải.</p>
           </article>
-          <article class="cell tint-red rv">
+          <article class="cell photo rv" style="--img:url({{img:c_shop}})">
             <i class="ph ph-plugs ci"></i>
             <h3>Ổ cắm quá tải</h3><p>Cắm chồng nhiều thiết bị, dùng liên tục nhiều năm.</p>
           </article>
-          <article class="cell rv" style="--i:1">
+          <article class="cell tint-red rv" style="--i:1">
             <i class="ph ph-fire-extinguisher ci"></i>
             <h3>Bình chữa cháy hết hạn</h3><p>Hoặc không có, hoặc đặt ở góc khuất không ai biết.</p>
           </article>
-          <article class="cell tint-navy rv" style="--i:2">
+          <article class="cell photo rv" style="--i:2;--img:url({{img:c_shutter}})">
             <i class="ph ph-door-open ci"></i>
-            <h3>Lối thoát bị chặn</h3><p>Cầu thang, cửa sau chất đầy hàng hóa và đồ đạc.</p>
+            <h3>Lối thoát bị chặn</h3><p>Cửa cuốn khóa kín, cầu thang chất đầy hàng hóa.</p>
           </article>
         </div>
       </div>

@@ -10,7 +10,8 @@ const svg = (name, weight = 'regular', cls = '') => {
     .replace('<svg ', `<svg class="ic${cls ? ' ' + cls : ''}" aria-hidden="true" focusable="false" fill="currentColor" `);
 };
 
-let html = readFileSync('src/template.html', 'utf8');
+const uri = (n) => `data:image/webp;base64,${readFileSync(`assets/${n}.webp`).toString('base64')}`;
+let html = readFileSync('src/template.html', 'utf8').replace(/\{\{img:([a-z_]+)\}\}/g, (_, n) => uri(n));
 html = html.replace(/<i class="ph(?:-(fill|bold))? ph-([a-z-]+)((?: [a-z-]+)*)"([^>]*)><\/i>/g,
   (_, weight, name, extra, attrs) => svg(name, weight || 'regular', extra.trim()).replace('<svg ', `<svg${attrs} `));
 if (/class="ph/.test(html)) throw new Error('unconverted icon left in template');
@@ -19,7 +20,7 @@ const labelIcons = Object.fromEntries(['lightning', 'plugs', 'fire-extinguisher'
   .map(n => [n, svg(n, 'fill')]));
 
 const out = await build({ entryPoints: ['src/main.js'], bundle: true, minify: true, format: 'iife', write: false, target: 'es2020', legalComments: 'none' });
-const js = `window.__ICONS=${JSON.stringify(labelIcons)};\n${out.outputFiles[0].text}`.replaceAll('</script', '<\\/script');
+const js = `window.__ICONS=${JSON.stringify(labelIcons)};window.__ASSETS=${JSON.stringify({ hero: uri('hero'), depth: uri('depth') })};\n${out.outputFiles[0].text}`.replaceAll('</script', '<\\/script');
 html = html.replace('<script>/*APP*/</script>', () => `<script>${js}</script>`);
 writeFileSync('index.html', html);
 console.log('index.html', (html.length / 1024).toFixed(0) + ' KB');
