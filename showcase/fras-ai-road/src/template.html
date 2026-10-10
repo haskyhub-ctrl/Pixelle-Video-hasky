@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FRAS-AI · Con đường an toàn</title>
+<meta name="description" content="Hành trình 3D qua các nguy cơ cháy nổ trong nhà và cách AI giúp phát hiện sớm. Hệ thống đánh giá nguy cơ cháy nổ thông minh, miễn phí, ẩn danh.">
+<meta name="theme-color" content="#eef1f8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700&display=swap" rel="stylesheet">
+<style>
+/*
+  Design read: playful-premium 3D journey (reference: robinpayot.com) for residents of Bắc Ninh.
+  Light pastel world, chapter colours shift along the road. One accent per chapter, brand red for actions.
+  Shape system: interactive = full pill, panels = 22px.
+*/
+:root{
+  --ink:#1c2233; --muted:#5d6782; --line:rgba(28,34,51,.12);
+  --red:#C0202A; --red-hi:#e0323c; --navy:#1A3A6B;
+  --bg-a:#f4f5f9; --bg-b:#9db6ff;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --gutter:clamp(16px,3vw,40px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg-a);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;border-radius:8px}
+svg.ic{width:1em;height:1em;display:inline-block;flex:none;vertical-align:-.14em}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* world background: soft gradient that shifts with each chapter */
+#bg{position:fixed;inset:0;z-index:0;background:
+  radial-gradient(80% 90% at 100% 100%,var(--bg-b) 0%,transparent 70%),
+  radial-gradient(70% 70% at 0% 0%,#ffffff 0%,transparent 60%),
+  var(--bg-a)}
+#scene{position:fixed;inset:0;width:100%;height:100%;z-index:1;display:block}
+#track{position:relative;z-index:0;pointer-events:none}
+
+/* HUD */
+.hud{position:fixed;z-index:5;pointer-events:none}
+.hud *{pointer-events:auto}
+.hud-top{top:0;left:0;right:0;padding:22px var(--gutter);display:flex;justify-content:space-between;align-items:flex-start}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;letter-spacing:-.02em}
+.brand-mark{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--red);color:#fff;font-size:18px}
+.brand b{color:var(--red)}
+.modes{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.modes button{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(28,34,51,.42);transition:color .3s,transform .4s var(--ease);padding:2px 0}
+.modes button:hover{color:var(--ink);transform:translateX(-3px)}
+.modes button[aria-pressed="true"]{color:var(--ink)}
+.hud-bottom{bottom:0;left:0;right:0;padding:20px var(--gutter);display:flex;justify-content:space-between;align-items:flex-end}
+.chapter{display:flex;align-items:center;gap:14px}
+.dots{display:flex;gap:6px}
+.dots span{width:22px;height:22px;border-radius:50%;border:2px solid rgba(28,34,51,.55);transition:background .4s,transform .4s var(--ease)}
+.dots span.on{background:var(--ink);transform:scale(.85)}
+.chapter-name{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.links{display:flex;gap:10px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:999px;font-weight:600;font-size:14px;white-space:nowrap;transition:transform .4s var(--ease),background .25s}
+.pill:active{transform:scale(.97)}
+.pill-red{background:var(--red);color:#fff;box-shadow:0 10px 26px -12px rgba(192,32,42,.8)}
+.pill-red:hover{background:#d0242f}
+.pill-ghost{background:rgba(255,255,255,.7);border:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.hint{position:fixed;left:50%;bottom:86px;z-index:5;translate:-50% 0;font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px;transition:opacity .6s}
+.hint i{width:18px;height:28px;border:2px solid currentColor;border-radius:10px;position:relative}
+.hint i::after{content:"";position:absolute;left:50%;top:5px;width:3px;height:6px;margin-left:-1.5px;border-radius:2px;background:currentColor;animation:wheel 1.6s var(--ease) infinite}
+@keyframes wheel{0%{transform:translateY(0);opacity:1}100%{transform:translateY(9px);opacity:0}}
+.final-cta{position:fixed;left:50%;bottom:96px;z-index:6;translate:-50% 0;display:flex;gap:10px;opacity:0;pointer-events:none;transition:opacity .6s var(--ease),transform .6s var(--ease);transform:translateY(16px)}
+.final-cta.on{opacity:1;pointer-events:auto;transform:none}
+.final-cta .pill{height:52px;padding:0 26px;font-size:16px}
+
+/* intro */
+#intro{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:var(--bg-a);transition:opacity 1s var(--ease),visibility 1s}
+#intro.gone{opacity:0;visibility:hidden}
+.intro-inner{text-align:center;display:flex;flex-direction:column;align-items:center;gap:34px}
+.intro-title{font-size:clamp(26px,3.4vw,40px);font-weight:800;letter-spacing:.06em}
+.intro-title b{color:var(--red)}
+.intro-sub{font-size:clamp(15px,1.8vw,22px);font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#444b5c;max-width:30ch;line-height:1.35}
+.enter{position:relative;width:172px;height:172px;border-radius:50%;display:grid;place-items:center;font-size:22px;font-weight:700;color:#444b5c}
+.enter svg.ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.enter .ring circle{fill:none;stroke:#8a90a0;stroke-width:1.5}
+.enter .ring .prog{stroke:var(--red);stroke-width:2.5;stroke-linecap:round;transition:stroke-dashoffset .4s var(--ease)}
+.enter .inner{position:absolute;inset:18px;border-radius:50%;border:1.5px solid #5b6070;transition:transform .5s var(--ease),background .3s,border-color .3s}
+.enter:hover .inner{transform:scale(1.06);background:#fff;border-color:var(--red)}
+.enter span{position:relative}
+.enter[disabled]{cursor:progress;opacity:.75}
+.intro-foot{font-size:13px;color:var(--muted)}
+
+/* modal */
+#modal{position:fixed;inset:0;z-index:15;display:grid;place-items:center;padding:20px;background:rgba(240,242,248,.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;visibility:hidden;transition:opacity .45s var(--ease),visibility .45s}
+#modal.open{opacity:1;visibility:visible}
+.sheet{width:min(860px,100%);max-height:calc(100dvh - 40px);overflow:auto;background:#fff;border-radius:22px;box-shadow:0 40px 90px -30px rgba(28,34,51,.45);display:grid;grid-template-columns:1fr 1fr;transform:translateY(24px) scale(.98);transition:transform .6s var(--ease)}
+#modal.open .sheet{transform:none}
+.sheet-img{min-height:320px;background:var(--navy) center/cover no-repeat;border-radius:22px 0 0 22px}
+.sheet-body{padding:clamp(24px,4vw,44px);display:flex;flex-direction:column;gap:14px}
+.sheet-tag{font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red)}
+.sheet h2{font-size:clamp(1.6rem,3vw,2.2rem);line-height:1.15;letter-spacing:-.025em;font-weight:800}
+.sheet p{color:var(--muted);line-height:1.6}
+.sheet ul{list-style:none;display:grid;gap:8px;color:var(--ink)}
+.sheet li{display:flex;gap:10px;align-items:flex-start;line-height:1.5}
+.sheet li svg{color:var(--red);margin-top:3px}
+.sheet .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto;padding-top:10px}
+.close{position:absolute;top:18px;right:18px;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:20px;box-shadow:0 8px 24px -10px rgba(28,34,51,.4);z-index:2}
+
+/* list mode */
+#list{position:fixed;inset:0;z-index:12;overflow:auto;padding:110px var(--gutter) 120px;background:rgba(244,245,249,.86);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility .5s}
+#list.open{opacity:1;visibility:visible}
+.list-inner{max-width:1100px;margin:0 auto}
+.list-chapter{padding:26px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:220px 1fr;gap:20px}
+.list-chapter h3{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding-top:14px}
+.list-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.list-item{display:flex;gap:12px;align-items:center;text-align:left;padding:10px;border-radius:16px;background:#fff;border:1px solid var(--line);transition:transform .4s var(--ease),box-shadow .3s}
+.list-item:hover{transform:translateY(-2px);box-shadow:0 14px 30px -18px rgba(28,34,51,.5)}
+.list-item .th{width:64px;height:52px;border-radius:10px;flex:none;background:#ddd center/cover no-repeat}
+.list-item b{display:block;font-size:14.5px;line-height:1.3}
+.list-item small{color:var(--muted);font-size:12.5px}
+
+#tip{position:fixed;z-index:7;pointer-events:none;padding:7px 12px;border-radius:999px;background:var(--ink);color:#fff;font-size:12.5px;font-weight:600;opacity:0;transform:translate(14px,14px);transition:opacity .2s}
+body.no-webgl #scene{display:none}
+
+@media (max-width:767px){
+  .sheet{grid-template-columns:1fr}
+  .sheet-img{min-height:200px;border-radius:22px 22px 0 0}
+  .list-chapter{grid-template-columns:1fr;gap:6px}
+  .links .pill-ghost{display:none}
+  .chapter-name{display:none}
+  .hint{bottom:84px}
+  .final-cta{bottom:84px;width:calc(100% - 32px);justify-content:center}
+  .final-cta .pill{flex:1;justify-content:center;padding:0 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  .hint i::after{animation:none}
+  *{transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<canvas id="scene" aria-hidden="true"></canvas>
+<div id="track"></div>
+<div id="tip"></div>
+
+<div id="intro">
+  <div class="intro-inner">
+    <p class="intro-title">FRAS<b>·</b>AI</p>
+    <button class="enter" id="enter" disabled aria-label="Vào hành trình">
+      <svg class="ring" viewBox="0 0 172 172" aria-hidden="true"><circle cx="86" cy="86" r="84"/><circle class="prog" id="prog" cx="86" cy="86" r="84" stroke-dasharray="528" stroke-dashoffset="528"/></svg>
+      <i class="inner"></i><span id="enter-label">Đang tải</span>
+    </button>
+    <p class="intro-sub">Con đường an toàn phòng cháy</p>
+    <p class="intro-foot">Hệ thống AI đánh giá nguy cơ cháy nổ · Công an tỉnh Bắc Ninh</p>
+  </div>
+</div>
+
+<header class="hud hud-top">
+  <a class="brand" href="#" id="home" aria-label="Về đầu hành trình"><span class="brand-mark"><i class="ph-fill ph-shield-check"></i></span><span>FRAS<b>·</b>AI</span></a>
+  <nav class="modes" aria-label="Chế độ xem">
+    <button data-mode="road" aria-pressed="true">Con đường</button>
+    <button data-mode="overview" aria-pressed="false">Toàn cảnh</button>
+    <button data-mode="list" aria-pressed="false">Danh sách</button>
+  </nav>
+</header>
+
+<footer class="hud hud-bottom">
+  <div class="chapter"><div class="dots" aria-hidden="true"><span class="on"></span><span></span><span></span><span></span></div><span class="chapter-name" id="chapter-name">FRAS·AI</span></div>
+  <div class="links">
+    <a class="pill pill-ghost" href="https://fras-ai.com/survey.html">Bắt đầu khảo sát</a>
+    <a class="pill pill-red" href="tel:114" aria-label="Gọi báo cháy 114"><i class="ph-fill ph-phone-call"></i>114</a>
+  </div>
+</footer>
+
+<p class="hint" id="hint"><i aria-hidden="true"></i>Cuộn để đi tiếp</p>
+<div class="final-cta" id="final-cta">
+  <a class="pill pill-red" href="https://fras-ai.com/survey.html">Bắt đầu khảo sát <i class="ph-bold ph-arrow-right"></i></a>
+  <a class="pill pill-ghost" href="tel:02223822114">PCCC Bắc Ninh</a>
+</div>
+
+<div id="list" role="dialog" aria-label="Danh sách các trạm"><div class="list-inner" id="list-inner"></div></div>
+
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="m-title">
+  <div class="sheet" style="position:relative">
+    <button class="close" id="m-close" aria-label="Đóng"><i class="ph-bold ph-x"></i></button>
+    <div class="sheet-img" id="m-img"></div>
+    <div class="sheet-body">
+      <p class="sheet-tag" id="m-tag"></p>
+      <h2 id="m-title"></h2>
+      <p id="m-body"></p>
+      <ul id="m-list"></ul>
+      <div class="row">
+        <a class="pill pill-red" href="https://fras-ai.com/survey.html">Bắt đầu khảo sát <i class="ph-bold ph-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="sr-only" id="sr"></main>
+
+<script>/*APP*/</script>
+</body>
+</html>
