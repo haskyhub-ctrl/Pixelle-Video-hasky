@@ -52,7 +52,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 @media (max-width:600px){.stickers{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .stk{aspect-ratio:1;max-width:100%;display:grid;place-items:center;font-size:clamp(26px,5vw,40px);border-radius:50%;border:3px dashed var(--ink-soft);background:var(--paper-soft)}
 .stk.on{border-style:solid;border-color:var(--ink);background:var(--sun);animation:pop .5s}
-.stk:not(.on) .emo{filter:grayscale(1);opacity:.25}
+.stk:not(.on) .ico{filter:grayscale(1);opacity:.25}
 
 /* Play screen */
 .bar{display:flex;align-items:center;gap:10px}
@@ -72,7 +72,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 .slot.fill{border-style:solid;border-color:var(--ink);background:var(--paper);animation:pop .4s}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;align-content:start}
 .card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;font-weight:800;font-size:clamp(17px,2.4vw,21px);line-height:1.2;text-align:center}
-.card .big{font-size:58px}
+.card .big{font-size:clamp(58px,9vw,76px)}
 .shake{animation:shake .45s}
 .hint{animation:glow 1s infinite}
 .used{visibility:hidden}
@@ -90,12 +90,12 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 
 /* Sort */
 .sortcard{align-self:center;width:min(420px,100%);display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;text-align:center;font-weight:800;font-size:clamp(20px,3vw,26px);line-height:1.25}
-.sortcard .big{font-size:84px}
+.sortcard .big{font-size:clamp(90px,16vw,120px)}
 .sortcard.in{animation:pop .35s}
 .sortcard.flyL{animation:flyL .5s forwards}.sortcard.flyR{animation:flyR .5s forwards}
 .bins{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .bin{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;font-weight:800;font-size:clamp(17px,2.6vw,22px);line-height:1.2;text-align:center}
-.bin .big{font-size:52px}
+.bin .big{font-size:clamp(52px,9vw,68px)}
 .bin.L{background:var(--mint)} .bin.R{background:var(--pink)}
 
 /* Quiz */
@@ -106,7 +106,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 .opts.six{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:520px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;font-weight:800;font-size:clamp(16px,2.4vw,20px);line-height:1.2;text-align:center}
-.opt .big{font-size:54px}
+.opt .big{font-size:clamp(56px,10vw,74px)}
 .opt.no{opacity:.35;pointer-events:none}
 .opt.yes{background:var(--mint)}
 .hearts{display:flex;justify-content:center;gap:6px;font-size:30px}
@@ -143,6 +143,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 .parent a{color:var(--ink);font-weight:800}
 .form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
 .form label{display:flex;flex-direction:column;gap:4px;font-weight:800}
+.form select{font:inherit;padding:10px 12px;border:var(--edge);border-radius:12px;background:var(--paper-soft);color:var(--ink)}
 .form input[type=text]{font:inherit;padding:10px 12px;border:var(--edge);border-radius:12px;background:var(--paper-soft);color:var(--ink)}
 .tog{flex-direction:row!important;align-items:center;gap:10px!important}
 .tog input{width:26px;height:26px;accent-color:var(--good)}
@@ -165,6 +166,56 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 .buddy.jump{animation:jump .55s}
 .winrow{display:flex;align-items:flex-end;justify-content:center;gap:12px}
 .winrow .buddy{width:clamp(130px,28vw,190px)}
+/* Animation: characters blink, wave, breathe; props float and twinkle; mom's mouth moves while she talks */
+svg .blink{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+svg .wave{transform-box:view-box;transform-origin:128px 158px;animation:wave 1.6s ease-in-out infinite}
+svg .fl{transform-box:fill-box;transform-origin:center;animation:floaty 2.4s ease-in-out infinite}
+svg .d2{animation-delay:-.8s} svg .d3{animation-delay:-1.6s}
+svg .tw{transform-box:fill-box;transform-origin:center;animation:twinkle 1.8s ease-in-out infinite}
+svg .pl{transform-box:fill-box;transform-origin:center;animation:pulse 1.4s ease-in-out infinite}
+svg .zzs{animation:zzz 2.4s ease-in-out infinite}
+svg .wg{transform-box:fill-box;transform-origin:center;animation:wiggle 1.6s ease-in-out infinite}
+svg .breathe{transform-box:fill-box;transform-origin:center bottom;animation:breathe 3s ease-in-out infinite}
+svg .shake-it{animation:shakeit .25s linear infinite}
+svg .sway{transform-box:fill-box;transform-origin:center bottom;animation:sway 2.6s ease-in-out infinite}
+svg .m-talk{display:none}
+.talking svg .m-still{display:none}
+.talking svg .m-talk{display:inline;transform-box:fill-box;transform-origin:center;animation:talk .22s ease-in-out infinite alternate}
+.talking .face{animation:nod .9s ease-in-out infinite}
+.buddy svg{transform-origin:center bottom;animation:breathe 3.2s ease-in-out infinite}
+.scene .who svg{animation:none}
+.cards>*,.opts>*,.bins>*,.grid>*{animation:enter .45s cubic-bezier(.3,1.4,.6,1) both}
+.cards>:nth-child(2),.opts>:nth-child(2),.bins>:nth-child(2),.grid>:nth-child(2){animation-delay:.07s}
+.cards>:nth-child(3),.opts>:nth-child(3),.grid>:nth-child(3){animation-delay:.14s}
+.cards>:nth-child(4),.opts>:nth-child(4),.grid>:nth-child(4){animation-delay:.21s}
+.cards>:nth-child(5),.opts>:nth-child(5),.grid>:nth-child(5){animation-delay:.28s}
+.cards>:nth-child(6),.opts>:nth-child(6),.grid>:nth-child(6){animation-delay:.35s}
+.cards>:nth-child(7),.grid>:nth-child(7){animation-delay:.42s}
+.grid>:nth-child(8){animation-delay:.49s}
+.card.go-slot{animation:toslot .45s ease-in forwards}
+.opt.yes .ico{animation:jump .55s}
+.stars .ico,.bigstars .ico,.chip .ico{width:1em;height:1em}
+.stars .st,.bigstars .st{display:inline-block}
+.bigstars .st:not(.off){animation:pop .5s both}.bigstars .st:nth-child(2){animation-delay:.2s}.bigstars .st:nth-child(3){animation-delay:.4s}
+.round .ico{width:34px;height:34px}.round .ico svg{width:100%;height:100%}
+.hearts .hrt.off{filter:grayscale(1);opacity:.3}
+.hearts .hrt:not(.off){animation:pop .4s}
+.cards>.shake,.bins>.shake,.opts>.shake{animation:shake .45s}
+.cards>.hint,.opts>.hint,.bins>.hint{animation:glow 1s infinite}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes twinkle{0%,100%{transform:scale(1) rotate(0);opacity:1}50%{transform:scale(.6) rotate(45deg);opacity:.6}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+@keyframes zzz{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(-6px);opacity:.5}}
+@keyframes wiggle{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03,1.02)}}
+@keyframes shakeit{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+@keyframes sway{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+@keyframes talk{from{transform:scaleY(.35)}to{transform:scaleY(1.1)}}
+@keyframes nod{0%,100%{transform:rotate(0)}50%{transform:rotate(-4deg)}}
+@keyframes enter{from{transform:translateY(24px) scale(.85);opacity:0}to{transform:none;opacity:1}}
+@keyframes toslot{40%{transform:scale(1.08)}100%{transform:translateY(-120px) scale(.2);opacity:0}}
 @keyframes jump{40%{transform:translateY(-18px)}}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 @keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
@@ -192,7 +243,6 @@ const SVG = {
   towel:'<svg viewBox="0 0 64 64"><rect x="10" y="6" width="44" height="6" rx="3" fill="#1E3A4C"/><rect x="14" y="12" width="36" height="46" rx="4" fill="#8ED0F4" stroke="#1E3A4C" stroke-width="3"/><path d="M14 46h36" stroke="#fff" stroke-width="5"/></svg>',
   wipes:'<svg viewBox="0 0 64 64"><rect x="6" y="20" width="52" height="32" rx="10" fill="#fff" stroke="#1E3A4C" stroke-width="3"/><rect x="20" y="16" width="24" height="12" rx="5" fill="#93E0C3" stroke="#1E3A4C" stroke-width="3"/><path d="M26 18q6-10 12 0" fill="#fff" stroke="#1E3A4C" stroke-width="2"/></svg>'
 };
-function ic(k){ return k.startsWith('svg:') ? `<span class="ico">${SVG[k.slice(4)]}</span>` : `<span class="emo">${k}</span>`; }
 
 /* ---------- Characters: chị (big sister), mẹ (mom), em bé (baby). Hand-drawn SVG, one style. ---------- */
 const C = {skin:'#FFDCC4', shade:'#F4BFA0', hair:'#4A2E2A', hair2:'#6B4238', ink:'#2B2230', cheek:'#FF8FA3', mouth:'#C9404F', tongue:'#FF8E9B',
@@ -200,7 +250,8 @@ const C = {skin:'#FFDCC4', shade:'#F4BFA0', hair:'#4A2E2A', hair2:'#6B4238', ink
 const svg = (inner, vb) => `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
 const place = (inner, x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
 
-function eyes(xs, y, t, r=1){
+function eyes(xs, y, t, r=1){ return `<g class="eyes${['joy','closed','squeeze','half'].includes(t)?'':' blink'}">`+eyes0(xs,y,t,r)+'</g>'; }
+function eyes0(xs, y, t, r=1){
   const st = `fill="none" stroke="${C.ink}" stroke-width="${4*r}" stroke-linecap="round" stroke-linejoin="round"`;
   return xs.map((x,i)=>{
     switch(t){
@@ -228,9 +279,9 @@ function mouth(x, y, t, r=1){
 }
 const cheeks = (xs, y, r=1, k=1) => xs.map(x=>`<ellipse cx="${x}" cy="${y}" rx="${9*r*k}" ry="${6*r*k}" fill="${C.cheek}" opacity="${k>1?.85:.6}"/>`).join('');
 const drop = (x,y,s=1) => `<path d="M${x} ${y} q${-7*s} ${10*s} 0 ${14*s} q${7*s} ${-4*s} 0 ${-14*s}z" fill="${C.blue}" stroke="${C.ink}" stroke-width="1.5"/>`;
-const zzz = (x,y) => `<g font-family="Baloo 2, Nunito, sans-serif" font-weight="800" fill="${C.lilacD}"><text x="${x}" y="${y}" font-size="22">z</text><text x="${x+14}" y="${y-14}" font-size="17">z</text><text x="${x+25}" y="${y-26}" font-size="13">z</text></g>`;
-const heart = (x,y,s=1,f=C.coral) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 6 C-10 -6 -22 4 -12 14 L0 26 L12 14 C22 4 10 -6 0 6Z" fill="${f}" stroke="${C.ink}" stroke-width="2"/>`;
-const sparkle = (x,y,s=1,f=C.sun) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3Z" fill="${f}"/>`;
+const zzz = (x,y) => `<g class="zzs" font-family="Baloo 2, Nunito, sans-serif" font-weight="800" fill="${C.lilacD}"><text x="${x}" y="${y}" font-size="22">z</text><text x="${x+14}" y="${y-14}" font-size="17">z</text><text x="${x+25}" y="${y-26}" font-size="13">z</text></g>`;
+const heart = (x,y,s=1,f=C.coral) => `<g transform="translate(${x} ${y}) scale(${s})"><path class="pl" d="M0 6 C-10 -6 -22 4 -12 14 L0 26 L12 14 C22 4 10 -6 0 6Z" fill="${f}" stroke="${C.ink}" stroke-width="2"/></g>`;
+const sparkle = (x,y,s=1,f=C.sun) => `<g transform="translate(${x} ${y}) scale(${s})"><path class="tw" d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3Z" fill="${f}"/></g>`;
 const DIAPER = `<path d="M6 16h52l-4 13c-3 10-10 19-22 21C20 48 13 39 10 29z" fill="#fff" stroke="#5AAEE3" stroke-width="4" stroke-linejoin="round"/><rect x="3" y="12" width="13" height="9" rx="3" fill="${C.sun}" stroke="${C.ink}" stroke-width="2"/><rect x="48" y="12" width="13" height="9" rx="3" fill="${C.sun}" stroke="${C.ink}" stroke-width="2"/>`;
 
 /* Baby: viewBox 0 0 160 160 */
@@ -266,7 +317,7 @@ function girl({e='open', m='smile', pose='down', prop='', sweat=false}={}){
   if(prop==='basket') P = `<circle cx="84" cy="176" r="12" fill="${C.blue}" stroke="${C.ink}" stroke-width="2.5"/><rect x="98" y="164" width="20" height="20" rx="4" fill="${C.sun}" stroke="${C.ink}" stroke-width="2.5"/><path d="M66 182 h68 l-8 36 h-52 z" fill="#D9995A" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/><path d="M72 194 h56 M76 206 h48" stroke="#B87638" stroke-width="3"/>`;
   if(prop==='diaper') P = place(DIAPER, 74, 162, .8);
   if(prop==='heart') P = heart(100,172,1.3);
-  if(prop==='bubbles') P = [[78,176,9],[120,170,12],[100,160,7],[136,190,8],[66,196,7],[104,196,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".75" stroke="${C.blue}" stroke-width="2.5"/><circle cx="${x-r*.35}" cy="${y-r*.35}" r="${r*.25}" fill="#fff"/>`).join('');
+  if(prop==='bubbles') P = [[78,176,9],[120,170,12],[100,160,7],[136,190,8],[66,196,7],[104,196,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".75" stroke="${C.blue}" stroke-width="2.5" class="fl"/><circle cx="${x-r*.35}" cy="${y-r*.35}" r="${r*.25}" fill="#fff"/>`).join('');
   if(prop==='cup') P = `<path d="M88 168 h24 l-3 30 h-18z" fill="#DFF3FF" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/><path d="M90 178 h20" stroke="${C.blue}" stroke-width="6"/>`;
   return `
   <ellipse cx="100" cy="246" rx="58" ry="8" fill="${C.ink}" opacity=".12"/>
@@ -277,7 +328,7 @@ function girl({e='open', m='smile', pose='down', prop='', sweat=false}={}){
   <path d="M72 150 Q100 138 128 150 L152 212 Q100 230 48 212 Z" fill="${C.coral}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>
   <circle cx="80" cy="196" r="4" fill="#fff" opacity=".8"/><circle cx="118" cy="204" r="4" fill="#fff" opacity=".8"/><circle cx="100" cy="186" r="4" fill="#fff" opacity=".8"/><circle cx="132" cy="186" r="3.5" fill="#fff" opacity=".8"/><circle cx="68" cy="210" r="3.5" fill="#fff" opacity=".8"/>
   <path d="M82 146 Q90 164 100 152 Q110 164 118 146 Q100 140 82 146Z" fill="#fff" stroke="${C.ink}" stroke-width="2.5" stroke-linejoin="round"/>
-  ${A.map(([x1,y1,x2,y2])=>`<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.ink}" stroke-width="19" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.skin}" stroke-width="13" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="12" fill="${C.coral}" stroke="${C.ink}" stroke-width="3"/>`).join('')}
+  ${A.map(([x1,y1,x2,y2],i)=>`<g class="${pose==='wave'&&i===1?'wave':''}"><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.ink}" stroke-width="19" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.skin}" stroke-width="13" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="12" fill="${C.coral}" stroke="${C.ink}" stroke-width="3"/></g>`).join('')}
   ${P}
   <circle cx="100" cy="90" r="64" fill="${C.hair}" stroke="${C.ink}" stroke-width="3"/>
   <ellipse cx="100" cy="100" rx="53" ry="48" fill="${C.skin}"/>
@@ -307,7 +358,7 @@ function mom({e='open', m='smile', pose='down', sweat=false, z=false}={}){
   <path d="M55 92 Q54 42 104 40 Q148 44 146 88 Q134 62 112 56 Q86 72 55 92 Z" fill="${C.hair}"/>
   ${eyes([82,118],94,e,.9)}
   ${cheeks([70,130],110,.9)}
-  ${mouth(100,112,m,.9)}
+  <g class="m-still">${mouth(100,112,m,.9)}</g><g class="m-talk">${mouth(100,112,'o',.9)}</g>
   ${sweat?drop(140,64,1):''}
   ${z?zzz(146,40):''}
   ${hold}`;
@@ -329,19 +380,115 @@ const crib = inner => `<rect x="40" y="60" width="240" height="140" rx="16" fill
   ${Array.from({length:9},(_,i)=>`<rect x="${58+i*25}" y="66" width="7" height="100" rx="3" fill="${C.lilac}"/>`).join('')}
   <rect x="52" y="150" width="216" height="40" rx="10" fill="${C.blue}" stroke="${C.ink}" stroke-width="3"/>${inner}`;
 const SCENES = {
-  tay: ()=> place(girl({e:'joy',m:'grin',pose:'front',prop:'bubbles'}),76,-8,.88) + [[40,60,14],[278,80,18],[262,40,10],[52,150,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".7" stroke="${C.blue}" stroke-width="3"/>`).join(''),
+  tay: ()=> place(girl({e:'joy',m:'grin',pose:'front',prop:'bubbles'}),76,-8,.88) + [[40,60,14],[278,80,18],[262,40,10],[52,150,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".7" stroke="${C.blue}" stroke-width="3" class="fl"/>`).join(''),
   ta: ()=> place(girl({e:'open',m:'smile',pose:'front',prop:'doll'}),76,-8,.88) + place(DIAPER,240,40,1) + sparkle(46,60,1.4),
   nhe: ()=> place(baby('happy'),8,64,.95) + place(girl({e:'joy',m:'smile',pose:'wave'}),150,-6,.86) + heart(150,40,1.1) + heart(120,70,.7,C.pink||'#FFB5C8'),
-  khoc: ()=> place(baby('cry'),70,14,1.25) + `<g font-family="Baloo 2, sans-serif" font-weight="800" fill="${C.ink}"><text x="36" y="80" font-size="46">?</text><text x="262" y="70" font-size="56">?</text><text x="250" y="170" font-size="34">?</text></g>`,
-  ngu: ()=> crib(place(baby('sleep'),100,38,.85)) + `<circle cx="276" cy="34" r="20" fill="${C.sun}" stroke="${C.ink}" stroke-width="3"/><circle cx="286" cy="28" r="18" fill="var(--tint,#B9A6F5)"/>` + sparkle(40,30,1) + sparkle(220,22,.8),
+  khoc: ()=> place(baby('cry'),70,14,1.25) + `<g class="wg" font-family="Baloo 2, sans-serif" font-weight="800" fill="${C.ink}"><text x="36" y="80" font-size="46">?</text><text x="262" y="70" font-size="56">?</text><text x="250" y="170" font-size="34">?</text></g>`,
+  ngu: ()=> crib(`<g class="breathe">${place(baby('sleep'),100,38,.85)}</g>`) + `<circle cx="276" cy="34" r="20" fill="${C.sun}" stroke="${C.ink}" stroke-width="3"/><circle cx="286" cy="28" r="18" fill="var(--tint,#B9A6F5)"/>` + sparkle(40,30,1) + sparkle(220,22,.8),
   me: ()=> place(mom({e:'joy',pose:'nursing'}),20,-10,.88) + place(girl({e:'joy',m:'grin',pose:'down'}),178,48,.66) + heart(186,40,1),
   don: ()=> place(girl({e:'open',m:'grin',pose:'front',prop:'basket'}),76,-8,.88) + sparkle(50,70,1.3) + sparkle(270,110,1) + sparkle(250,50,.7),
   lay: ()=> place(mom({e:'open',pose:'nursing'}),16,-10,.88) + place(girl({e:'joy',m:'smile',pose:'front',prop:'diaper'}),170,40,.68) + `<text x="196" y="40" font-family="Baloo 2, sans-serif" font-weight="800" font-size="40" fill="${C.ink}">?</text>`
 };
 const scene = id => svg(SCENES[id](), '0 0 320 220');
 
+/* ---------- Icon set: every object in the game drawn as SVG (emoji fonts are missing on many devices). viewBox 0 0 64 64 ---------- */
+const K='#2B2230', S3=`stroke="${K}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"`;
+const HAND = (x,y,s=1,rot=0,f=C.skin) => `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${s})"><path d="M-9 14 V-6 a3.5 3.5 0 0 1 7 0 V-14 a3.5 3.5 0 0 1 7 0 V-6 V-12 a3.5 3.5 0 0 1 7 0 V2 l4 -5 a3.5 3.5 0 0 1 5.5 4 L8 14 Q4 20 -2 20 Q-9 20 -9 14Z" fill="${f}" ${S3}/></g>`;
+const face = (ch, vb) => ({ch, vb});
+const ICON = {
+ '🧼': `<rect x="8" y="22" width="48" height="30" rx="12" fill="#FFB5C8" ${S3}/><path d="M16 30 q8-5 16 0" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="22" cy="14" r="7" fill="#fff" stroke="${C.blue}" stroke-width="3" class="fl"/><circle cx="38" cy="10" r="5" fill="#fff" stroke="${C.blue}" stroke-width="3" class="fl d2"/><circle cx="50" cy="16" r="4" fill="#fff" stroke="${C.blue}" stroke-width="3" class="fl d3"/>`,
+ '🫧': `<circle cx="26" cy="36" r="16" fill="#E6F6FF" stroke="${C.blue}" stroke-width="3" class="fl"/><circle cx="20" cy="30" r="4" fill="#fff"/><circle cx="46" cy="20" r="10" fill="#E6F6FF" stroke="${C.blue}" stroke-width="3" class="fl d2"/><circle cx="48" cy="48" r="7" fill="#E6F6FF" stroke="${C.blue}" stroke-width="3" class="fl d3"/>`,
+ '🚰': `<path d="M8 14 h26 a8 8 0 0 1 8 8 v8 h-10 v-6 h-24z" fill="#BFC9D6" ${S3}/><rect x="14" y="6" width="10" height="8" rx="2" fill="${C.coral}" ${S3}/><path d="M37 36 q-5 8 0 12 q5 -4 0 -12z M37 52 q-3 5 0 7 q3 -2 0 -7z" fill="${C.blue}" ${S3} class="drip"/>`,
+ '👐': `${HAND(22,32,1,-12)}${HAND(42,32,1,12)}`,
+ '🤲': `${HAND(22,32,1,-12)}${HAND(42,32,1,12)}<path d="M32 10 l3 6 6 1-4 4 1 6-6-3-6 3 1-6-4-4 6-1z" fill="${C.sun}" class="tw"/>`,
+ '🙌': `${HAND(20,30,1.05,-20)}${HAND(44,30,1.05,20)}<path d="M8 10 l4 4 M56 10 l-4 4 M32 4 v5" ${S3}/>`,
+ '✋': `<circle cx="32" cy="32" r="28" fill="${C.pink||'#FFB5C8'}" ${S3}/>${HAND(32,30,1.15,0)}`,
+ '💦': `<path d="M20 14 q-10 14 0 20 q10 -6 0 -20z" fill="${C.blue}" ${S3} class="fl"/><path d="M42 24 q-12 16 0 24 q12 -8 0 -24z" fill="${C.blue}" ${S3} class="fl d2"/><path d="M24 44 q-6 8 0 12 q6 -4 0 -12z" fill="${C.blue}" ${S3} class="fl d3"/>`,
+ '💧': `<path d="M32 8 q-18 24 -12 36 q12 16 24 0 q6 -12 -12 -36z" fill="${C.blue}" ${S3}/><path d="M26 40 q0 6 6 8" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+ '👍': `<circle cx="32" cy="32" r="28" fill="${C.mint}" ${S3}/><path d="M18 30 h8 v20 h-8z" fill="${C.skin}" ${S3}/><path d="M26 30 l8 -14 q5 0 4 6 l-2 8 h10 q5 1 4 6 l-3 12 q-1 4 -6 4 h-15z" fill="${C.skin}" ${S3}/>`,
+ '✅': `<circle cx="32" cy="32" r="28" fill="${C.mint}" ${S3}/><path d="M18 33 l10 10 l18 -20" fill="none" stroke="${K}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`,
+ '🚽': `<rect x="12" y="6" width="22" height="20" rx="4" fill="#fff" ${S3}/><path d="M8 28 h48 q0 14 -16 18 l2 12 h-20 l2 -12 q-16 -4 -16 -18z" fill="#fff" ${S3}/><ellipse cx="32" cy="30" rx="16" ry="3" fill="${C.blue}"/>`,
+ '🐶': `<ellipse cx="14" cy="26" rx="8" ry="15" fill="#A86E44" ${S3}/><ellipse cx="50" cy="26" rx="8" ry="15" fill="#A86E44" ${S3}/><circle cx="32" cy="34" r="20" fill="#E9B98A" ${S3}/><circle cx="25" cy="31" r="3" fill="${K}"/><circle cx="39" cy="31" r="3" fill="${K}"/><ellipse cx="32" cy="40" rx="5" ry="3.5" fill="${K}"/><path d="M32 44 q-4 5 -8 2 M32 44 q4 5 8 2" fill="none" ${S3}/>`,
+ '⚽': `<circle cx="32" cy="32" r="26" fill="#fff" ${S3}/><path d="M32 20 l10 7 -4 12 h-12 l-4 -12z" fill="${K}"/><path d="M32 6 v14 M42 27 l13 -4 M38 39 l8 11 M26 39 l-8 11 M22 27 l-13 -4" ${S3}/>`,
+ '🍚': `<path d="M14 26 q18 -18 36 0z" fill="#fff" ${S3}/><path d="M8 28 h48 q-2 24 -24 24 q-22 0 -24 -24z" fill="${C.coral}" ${S3}/><path d="M18 38 h28" stroke="#fff" stroke-width="3"/><path d="M40 4 l-8 22 M48 6 l-12 20" ${S3}/>`,
+ '🎧': `<path d="M8 14 q24 -10 48 0 v38 q-24 -8 -48 0z" fill="#fff" ${S3}/><path d="M32 10 v38" ${S3}/><path d="M14 24 h12 M14 32 h12 M38 24 h12 M38 32 h12" stroke="${C.lilac}" stroke-width="3" stroke-linecap="round"/><path d="M44 46 q8 -6 14 2" fill="none" ${S3}/>${heart(52,4,.45)}`,
+ '🧷': DIAPER,
+ '🧴': `<rect x="24" y="4" width="16" height="10" rx="2" fill="${C.sun}" ${S3}/><rect x="14" y="14" width="36" height="44" rx="10" fill="#fff" ${S3}/><rect x="20" y="28" width="24" height="16" rx="4" fill="${C.mint}"/><path d="M26 36 h12" stroke="#fff" stroke-width="3"/>`,
+ '✂️': `<circle cx="18" cy="48" r="9" fill="none" stroke="${C.coral}" stroke-width="5"/><circle cx="46" cy="48" r="9" fill="none" stroke="${C.coral}" stroke-width="5"/><path d="M24 41 L46 6 M40 41 L18 6" stroke="#9AA6B4" stroke-width="6" stroke-linecap="round"/><path d="M24 41 L46 6 M40 41 L18 6" ${S3} stroke-width="1.5"/>`,
+ '🍬': `<path d="M6 22 l14 6 v8 l-14 6z M58 22 l-14 6 v8 l14 6z" fill="${C.lilac}" ${S3}/><ellipse cx="32" cy="32" rx="14" ry="12" fill="${C.coral}" ${S3}/><path d="M24 26 q8 12 16 0" stroke="#fff" stroke-width="3" fill="none"/>`,
+ '🗑️': `<rect x="10" y="12" width="44" height="8" rx="3" fill="#7BC27E" ${S3}/><rect x="26" y="6" width="12" height="6" rx="2" fill="#7BC27E" ${S3}/><path d="M14 20 h36 l-4 38 h-28z" fill="#9BD49E" ${S3}/><path d="M24 28 v22 M32 28 v22 M40 28 v22" ${S3}/>`,
+ '🧗': `<rect x="8" y="34" width="48" height="8" rx="3" fill="${C.sun}" ${S3}/><path d="M14 42 v16 M50 42 v16" ${S3}/><path d="M32 30 v-20 M24 18 l8 -9 8 9" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+ '💗': heart(32,18,1.4,'#FF8FB1'),
+ '❤️': heart(32,18,1.4,C.coral),
+ '👆': `<path d="M26 58 q-8 0 -10 -10 l-4 -14 q0 -5 5 -3 l5 8 V8 a5 5 0 0 1 10 0 v20 q8 -2 9 4 q6 -2 8 4 q6 0 6 6 v6 q0 14 -14 14z" fill="${C.skin}" ${S3}/>`,
+ '🎵': `<path d="M24 46 V12 l28 -6 v34" fill="none" stroke="${K}" stroke-width="5" stroke-linejoin="round"/><ellipse cx="18" cy="46" rx="9" ry="7" fill="${C.lilacD}" ${S3}/><ellipse cx="46" cy="40" rx="9" ry="7" fill="${C.lilacD}" ${S3}/>`,
+ '📢': `<path d="M8 26 h10 l26 -16 v44 l-26 -16 h-10z" fill="${C.coral}" ${S3}/><path d="M50 22 q6 10 0 20 M56 16 q10 16 0 32" fill="none" ${S3} class="pl"/>`,
+ '🛋️': `<rect x="10" y="16" width="44" height="22" rx="8" fill="${C.lilac}" ${S3}/><rect x="4" y="30" width="56" height="18" rx="7" fill="${C.lilacD}" ${S3}/><path d="M12 48 v8 M52 48 v8" ${S3}/><rect x="16" y="32" width="32" height="10" rx="4" fill="${C.lilac}"/>`,
+ '🔵': `<circle cx="32" cy="32" r="18" fill="#4F8FE8" ${S3}/><circle cx="25" cy="25" r="5" fill="#fff" opacity=".8"/><path d="M22 40 q10 4 18 -6" stroke="#9CC6FF" stroke-width="3" fill="none"/>`,
+ '📖': `<path d="M4 16 q14 -6 28 2 q14 -8 28 -2 v36 q-14 -6 -28 2 q-14 -8 -28 -2z" fill="#fff" ${S3}/><path d="M32 18 v36" ${S3}/><circle cx="18" cy="30" r="6" fill="${C.sun}"/><path d="M38 28 h14 M38 36 h14 M10 42 h14" stroke="${C.coral}" stroke-width="3" stroke-linecap="round"/>`,
+ '📚': `<rect x="8" y="40" width="48" height="12" rx="3" fill="${C.coral}" ${S3}/><rect x="12" y="28" width="42" height="12" rx="3" fill="${C.sun}" ${S3}/><rect x="6" y="16" width="44" height="12" rx="3" fill="${C.blue}" ${S3}/><path d="M14 22 h20 M18 34 h22 M16 46 h26" stroke="#fff" stroke-width="3"/>`,
+ '🤧': `<circle cx="32" cy="30" r="24" fill="${C.skin}" ${S3}/>${'<g class="eyes">'}<path d="M20 26 q4 -4 8 0 M36 26 q4 -4 8 0" fill="none" ${S3}/></g><ellipse cx="32" cy="34" rx="5" ry="4" fill="#FF8C8C"/><path d="M14 40 h36 l-4 14 h-28z" fill="#DFF3FF" ${S3}/><path d="M18 46 h28" stroke="${C.blue}" stroke-width="2"/>${drop(48,8,.8)}`,
+ '🦶': `<path d="M22 58 q-10 0 -10 -14 q0 -14 8 -26 q6 -8 14 -2 q6 6 4 20 q-2 10 2 14 q2 8 -8 8z" fill="${C.skin}" ${S3}/><circle cx="38" cy="10" r="4.5" fill="${C.skin}" ${S3}/><circle cx="46" cy="14" r="3.5" fill="${C.skin}" ${S3}/><circle cx="51" cy="21" r="3" fill="${C.skin}" ${S3}/><circle cx="53" cy="28" r="2.5" fill="${C.skin}" ${S3}/>${heart(52,40,.45)}`,
+ '🔍': `<circle cx="26" cy="26" r="17" fill="#E6F6FF" stroke="${K}" stroke-width="5"/><path d="M38 38 l16 16" stroke="${C.coral}" stroke-width="8" stroke-linecap="round"/><path d="M18 20 q4 -6 10 -6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+ '🍼': `<path d="M28 4 h8 l2 8 h-12z" fill="${C.sun}" ${S3}/><rect x="22" y="12" width="20" height="6" rx="2" fill="${C.lilac}" ${S3}/><rect x="18" y="18" width="28" height="40" rx="9" fill="#fff" ${S3}/><rect x="20" y="32" width="24" height="24" rx="7" fill="#FFF6E0"/><path d="M38 26 h6 M38 34 h6 M38 42 h6" ${S3}/>`,
+ '🎈': `<ellipse cx="32" cy="24" rx="17" ry="20" fill="${C.coral}" ${S3} class="sway"/><path d="M29 44 l3 4 3 -4z" fill="${C.coral}" ${S3}/><path d="M32 48 q-6 6 0 10 q4 3 0 6" fill="none" ${S3}/><ellipse cx="25" cy="16" rx="4" ry="6" fill="#fff" opacity=".6"/>`,
+ '🛁': `<path d="M6 30 h52 v6 q0 16 -16 16 h-20 q-16 0 -16 -16z" fill="#fff" ${S3}/><path d="M10 52 l-2 6 M54 52 l2 6" ${S3}/><path d="M12 10 q0 -6 8 -6 h4 v8" fill="none" ${S3}/><circle cx="20" cy="24" r="5" fill="#E6F6FF" stroke="${C.blue}" stroke-width="2.5" class="fl"/><circle cx="32" cy="22" r="7" fill="#E6F6FF" stroke="${C.blue}" stroke-width="2.5" class="fl d2"/><circle cx="44" cy="25" r="4" fill="#E6F6FF" stroke="${C.blue}" stroke-width="2.5" class="fl d3"/>`,
+ '🍪': `<circle cx="32" cy="32" r="24" fill="#E3A86B" ${S3}/><circle cx="24" cy="24" r="3.5" fill="#6E4526"/><circle cx="40" cy="22" r="3" fill="#6E4526"/><circle cx="36" cy="38" r="3.5" fill="#6E4526"/><circle cx="22" cy="40" r="3" fill="#6E4526"/><circle cx="44" cy="44" r="2.5" fill="#6E4526"/>`,
+ '🤗': `${heart(32,14,1.5,C.coral)}<path d="M6 30 q4 22 26 24 M58 30 q-4 22 -26 24" fill="none" stroke="${K}" stroke-width="12" stroke-linecap="round"/><path d="M6 30 q4 22 26 24 M58 30 q-4 22 -26 24" fill="none" stroke="${C.skin}" stroke-width="7" stroke-linecap="round"/>`,
+ '📺': `<rect x="6" y="14" width="52" height="36" rx="6" fill="#5B6B8C" ${S3}/><rect x="12" y="20" width="40" height="24" rx="3" fill="#BFE6FF"/><path d="M24 4 l8 10 8 -10" fill="none" ${S3}/><path d="M18 50 l-4 8 M46 50 l4 8" ${S3}/>`,
+ '🌡️': `<rect x="24" y="4" width="16" height="40" rx="8" fill="#fff" ${S3}/><circle cx="32" cy="48" r="12" fill="#FF5A4A" ${S3}/><rect x="29" y="18" width="6" height="28" rx="3" fill="#FF5A4A"/><path d="M40 14 h6 M40 22 h6 M40 30 h6" ${S3}/>`,
+ '🍦': `<path d="M20 30 l12 30 12 -30z" fill="#E3A86B" ${S3}/><path d="M24 36 l14 10 M22 32 l18 16" stroke="#B87638" stroke-width="2"/><circle cx="25" cy="24" r="10" fill="#FFB5C8" ${S3}/><circle cx="39" cy="24" r="10" fill="#FFF3C4" ${S3}/><circle cx="32" cy="14" r="9" fill="${C.mint}" ${S3}/>`,
+ '🫨': face(()=>`<g class="shake-it">${baby('cry')}</g><path d="M8 50 l10 10 -10 10 10 10 M152 50 l-10 10 10 10 -10 10" fill="none" stroke="#FF5A4A" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>`,'0 10 160 140'),
+ '🚪': `<rect x="14" y="4" width="36" height="56" rx="3" fill="#C98B4E" ${S3}/><rect x="20" y="10" width="24" height="18" rx="2" fill="#D9A36B" ${S3} stroke-width="2"/><rect x="20" y="32" width="24" height="20" rx="2" fill="#D9A36B" ${S3} stroke-width="2"/><circle cx="42" cy="32" r="3" fill="${C.sun}" ${S3} stroke-width="2"/>`,
+ '🛏️': `<rect x="6" y="14" width="52" height="40" rx="6" fill="#fff" ${S3}/>${[0,1,2,3,4,5].map(i=>`<rect x="${12+i*8}" y="18" width="3" height="24" fill="${C.lilac}"/>`).join('')}<rect x="10" y="38" width="44" height="12" rx="4" fill="${C.blue}" ${S3}/>`,
+ '🌙': `<path d="M42 8 a24 24 0 1 0 14 38 a20 20 0 1 1 -14 -38z" fill="${C.sun}" ${S3}/>${sparkle(16,14,.6)}`,
+ '🧸': `<circle cx="18" cy="14" r="7" fill="#C98B4E" ${S3}/><circle cx="46" cy="14" r="7" fill="#C98B4E" ${S3}/><ellipse cx="32" cy="46" rx="16" ry="14" fill="#C98B4E" ${S3}/><circle cx="32" cy="24" r="14" fill="#C98B4E" ${S3}/><ellipse cx="32" cy="28" rx="6" ry="4.5" fill="#F0D2AE"/><circle cx="27" cy="21" r="2" fill="${K}"/><circle cx="37" cy="21" r="2" fill="${K}"/><circle cx="32" cy="27" r="1.8" fill="${K}"/><ellipse cx="32" cy="48" rx="8" ry="7" fill="#F0D2AE"/>`,
+ '🧩': `<path d="M10 18 h12 a6 6 0 1 1 12 0 h12 v12 a6 6 0 1 1 0 12 v12 h-36z" fill="${C.mint}" ${S3}/>`,
+ '⬆️': `<rect x="4" y="34" width="56" height="20" rx="6" fill="${C.blue}" ${S3}/><circle cx="20" cy="30" r="12" fill="${C.skin}" ${S3}/>${'<g class="eyes">'}<path d="M15 30 q2 2 4 0 M22 30 q2 2 4 0" fill="none" stroke="${K}" stroke-width="2"/></g><path d="M30 34 q14 -10 26 0 v6 h-26z" fill="${C.mint}" ${S3}/><path d="M50 26 v-20 M44 12 l6 -6 6 6" fill="none" stroke="${C.good||'#22A86E'}" stroke-width="4" stroke-linecap="round"/>`,
+ '⬇️': `<rect x="4" y="34" width="56" height="20" rx="6" fill="${C.blue}" ${S3}/><circle cx="20" cy="30" r="12" fill="${C.hair}" ${S3}/><path d="M30 34 q14 -10 26 0 v6 h-26z" fill="${C.mint}" ${S3}/><path d="M48 4 l10 10 M58 4 l-10 10" stroke="#E8604E" stroke-width="4" stroke-linecap="round"/>`,
+ '🤫': `<circle cx="32" cy="32" r="24" fill="${C.skin}" ${S3}/><g class="eyes blink"><circle cx="24" cy="28" r="3" fill="${K}"/><circle cx="40" cy="28" r="3" fill="${K}"/></g><ellipse cx="32" cy="42" rx="4" ry="3" fill="${C.mouth}"/><rect x="29" y="30" width="7" height="22" rx="3.5" fill="${C.skin}" ${S3}/>`,
+ '🥁': `<ellipse cx="32" cy="24" rx="24" ry="9" fill="#fff" ${S3}/><path d="M8 24 v20 q24 14 48 0 v-20" fill="${C.coral}" ${S3}/><path d="M8 44 l12 -18 12 22 12 -22 12 18" fill="none" stroke="${C.sun}" stroke-width="3"/><path d="M20 4 l10 18 M48 4 l-10 18" stroke="#C98B4E" stroke-width="4" stroke-linecap="round"/>`,
+ '🌷': `<path d="M32 30 v28" stroke="#3E9A5A" stroke-width="4"/><path d="M32 50 q-14 -4 -16 -16 q12 2 16 12 M32 46 q12 -4 16 -14 q-12 2 -16 10" fill="#7BC27E" ${S3}/><path d="M18 10 q2 22 14 22 q12 0 14 -22 l-7 6 -7 -10 -7 10z" fill="#FF8FB1" ${S3}/>`,
+ '🥛': `<path d="M14 10 h36 l-5 46 h-26z" fill="#E6F6FF" ${S3}/><path d="M17 26 h30 l-3 28 h-24z" fill="${C.blue}"/><path d="M22 30 v16" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`,
+ '🍌': `<path d="M10 20 q4 30 30 32 q14 0 16 -6 q-24 2 -34 -28z" fill="#FFD84D" ${S3}/><path d="M8 14 l4 8" stroke="#6E4526" stroke-width="4" stroke-linecap="round"/>`,
+ '💤': `<g class="zzs" font-family="Baloo 2, Nunito, sans-serif" font-weight="800" fill="${C.lilacD}" stroke="${K}" stroke-width="1"><text x="6" y="56" font-size="30">Z</text><text x="26" y="38" font-size="24">Z</text><text x="42" y="22" font-size="18">Z</text></g>`,
+ '🧺': `<path d="M16 26 q16 -24 32 0" fill="none" stroke="#B87638" stroke-width="4"/><path d="M6 26 h52 l-6 30 h-40z" fill="#D9995A" ${S3}/><path d="M10 36 h44 M12 46 h40" stroke="#B87638" stroke-width="3"/>`,
+ '✨': `${sparkle(24,34,1.8)}${sparkle(48,16,1)}${sparkle(50,48,.7)}`,
+ '🔝': `<path d="M6 22 h52" stroke="#B87638" stroke-width="6" stroke-linecap="round"/><rect x="22" y="6" width="20" height="16" rx="3" fill="${C.sun}" ${S3}/><path d="M32 56 v-24 M24 40 l8 -8 8 8" fill="none" stroke="${C.coral}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`,
+ '🧱': `<rect x="8" y="26" width="48" height="26" rx="4" fill="#FF5A4A" ${S3}/><rect x="14" y="18" width="12" height="8" rx="2" fill="#FF5A4A" ${S3}/><rect x="38" y="18" width="12" height="8" rx="2" fill="#FF5A4A" ${S3}/>`,
+ '🪙': `<circle cx="32" cy="32" r="22" fill="${C.sun}" ${S3}/><circle cx="32" cy="32" r="15" fill="none" stroke="${C.sunD}" stroke-width="3"/><path d="M32 22 v20 M27 26 h8 a3 3 0 0 1 0 6 h-6 a3 3 0 0 0 0 6 h8" fill="none" stroke="${C.sunD}" stroke-width="3"/>`,
+ '🔋': `<rect x="10" y="18" width="40" height="28" rx="5" fill="#fff" ${S3}/><rect x="50" y="26" width="6" height="12" rx="2" fill="${K}"/><rect x="14" y="22" width="20" height="20" rx="2" fill="#7BC27E"/><path d="M30 24 l-6 10 h6 l-4 8" fill="none" stroke="${K}" stroke-width="2.5"/>`,
+ '👕': `<path d="M22 6 q10 8 20 0 l16 10 -6 12 -8 -4 v32 h-24 v-32 l-8 4 -6 -12z" fill="${C.sky||'#8ED0F4'}" ${S3}/><circle cx="32" cy="34" r="5" fill="${C.sun}"/>`,
+ '🗄️': `<rect x="10" y="4" width="44" height="54" rx="4" fill="#C98B4E" ${S3}/><path d="M32 4 v54" ${S3}/><circle cx="28" cy="30" r="2.5" fill="${C.sun}"/><circle cx="36" cy="30" r="2.5" fill="${C.sun}"/>`,
+ '👂': `<path d="M22 22 q0 -16 14 -16 q16 0 16 16 q0 10 -8 16 q-6 4 -6 10 q0 10 -10 10 q-10 0 -10 -10" fill="${C.skin}" ${S3}/><path d="M30 22 q2 -8 8 -6 q6 4 0 12 q-4 4 -4 8" fill="none" ${S3}/><path d="M6 20 q-4 10 2 20 M12 24 q-2 6 2 12" fill="none" stroke="${C.blue}" stroke-width="3" stroke-linecap="round" class="pl"/>`,
+ '🏅': `<path d="M18 4 l8 20 M46 4 l-8 20" stroke="${C.coral}" stroke-width="8"/><circle cx="32" cy="40" r="18" fill="${C.sun}" ${S3}/><path d="M32 30 l3 6 6 1 -4 4 1 6 -6 -3 -6 3 1 -6 -4 -4 6 -1z" fill="#fff"/>`,
+ '🧦': `<path d="M18 6 h16 v26 l14 10 q6 6 0 12 q-4 4 -10 0 l-18 -14 q-2 -2 -2 -6z" fill="${C.coral}" ${S3}/><rect x="18" y="6" width="16" height="8" fill="#fff" ${S3}/><path d="M18 22 h16" stroke="#fff" stroke-width="3"/>`,
+ '🧢': `<path d="M10 40 q0 -26 24 -26 q20 0 20 26z" fill="${C.blue}" ${S3}/><path d="M10 40 h48 q4 0 2 4 h-50z" fill="#4F8FE8" ${S3}/><circle cx="34" cy="14" r="3" fill="${C.sun}" ${S3}/>`,
+ '❓': `<circle cx="32" cy="32" r="26" fill="${C.sun}" ${S3}/><text x="32" y="46" text-anchor="middle" font-family="Baloo 2, Nunito, sans-serif" font-weight="800" font-size="40" fill="${K}">?</text>`,
+ '⭐': `<path d="M32 4 l8 18 20 2 -15 13 5 20 -18 -11 -18 11 5 -20 -15 -13 20 -2z" fill="${C.sun}" ${S3}/>`,
+ '🏠': `<path d="M6 30 L32 8 L58 30" fill="none" stroke="${K}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 28 v28 h40 v-28 l-20 -16z" fill="${C.coral}" ${S3}/><rect x="26" y="38" width="12" height="18" rx="2" fill="${C.sun}" ${S3}/><rect x="40" y="10" width="7" height="12" fill="${C.coral}" ${S3}/>`,
+ '🔊': `<path d="M6 24 h10 l16 -14 v44 l-16 -14 h-10z" fill="${C.lilac}" ${S3}/><path d="M40 22 q6 10 0 20 M48 14 q12 18 0 36" fill="none" stroke="${K}" stroke-width="4" stroke-linecap="round" class="pl"/>`,
+ '😣': face(()=>mom({e:'half',m:'flat',sweat:true}),'48 36 104 104'),
+ '😋': face(()=>mom({e:'up',m:'o'}),'48 36 104 104'),
+ '🥺': face(()=>mom({e:'half',m:'sad'}),'48 36 104 104'),
+ '🤱': face(()=>mom({e:'joy',pose:'nursing'}),'30 10 140 250'),
+ '👶': face(()=>baby('happy'),'28 14 104 104'),
+ '😴': face(()=>baby('sleep'),'28 14 112 112'),
+ '🥱': face(()=>baby('yawn'),'28 14 104 104'),
+ '😭': face(()=>baby('cry'),'28 14 104 104'),
+ '😫': face(()=>baby('cry'),'28 14 104 104'),
+ '👨‍👩‍👧': face(()=>mom({e:'open'}),'40 8 120 140')
+};
+function ic(k){
+  if(k.startsWith('svg:')) return `<span class="ico">${SVG[k.slice(4)]}</span>`;
+  const v = ICON[k];
+  if(!v) return `<span class="ico"></span>`;
+  if(typeof v==='object') return `<span class="ico">${svg(v.ch(), v.vb)}</span>`;
+  return `<span class="ico">${svg(v,'0 0 64 64')}</span>`;
+}
+
 /* ---------- Saved state ---------- */
-const DEF = {chi:'chị', em:'em bé', voice:true, stars:{}, seen:false};
+const DEF = {chi:'chị', em:'em bé', voice:true, rate:.75, voiceName:'', stars:{}, seen:false};
 let S = Object.assign({}, DEF);
 try{ Object.assign(S, JSON.parse(localStorage.getItem('tapLamChi')||'{}')); }catch(e){}
 function save(){ try{ localStorage.setItem('tapLamChi', JSON.stringify(S)); }catch(e){} }
@@ -350,21 +497,31 @@ const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
 const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
 
 /* ---------- Voice + sounds ---------- */
-let viVoice=null, lastSay='', sayToken=0;
-function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); viVoice = vs.find(v=>/^vi/i.test(v.lang)) || null; }catch(e){} }
+let viVoice=null, viVoices=[], lastSay='', sayToken=0;
+const MALE=/\b(an|nam ?minh|minh|male|nam)\b/i, FEMALE=/hoai ?my|hoài my|linh|female|nữ|google|thu|mai|lan/i;
+function pickVoice(){ try{
+  viVoices = speechSynthesis.getVoices().filter(v=>/^vi/i.test(v.lang));
+  viVoice = (S.voiceName && viVoices.find(v=>v.name===S.voiceName))
+    || viVoices.find(v=>FEMALE.test(v.name) && !MALE.test(v.name))
+    || viVoices.find(v=>!MALE.test(v.name)) || viVoices[0] || null;
+}catch(e){} }
 try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
 function say(text, onEnd){
   text = cap(T(text)); lastSay = text;
   const b = document.querySelector('#bubble p'); if(b) b.textContent = text;
   const my = ++sayToken; let fired=false;
   const fin = ()=>{ if(fired||my!==sayToken) return; fired=true; onEnd&&onEnd(); };
-  const est = Math.max(1600, text.length*75+600);
+  const rate = S.rate||.75;
+  const est = Math.max(1600, text.length*62/rate+600);
+  const bub = document.getElementById('bubble');
+  if(bub){ bub.classList.add('talking'); clearTimeout(say.t); say.t=setTimeout(()=>bub.classList.remove('talking'), est); }
+  const stopTalk = ()=>{ if(my===sayToken){ clearTimeout(say.t); document.getElementById('bubble')?.classList.remove('talking'); } };
   if(S.voice && window.speechSynthesis){
     try{
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      u.lang='vi-VN'; if(viVoice) u.voice=viVoice; u.rate=.92; u.pitch=1.15;
-      u.onend=()=>setTimeout(fin,250); u.onerror=()=>setTimeout(fin,est);
+      u.lang='vi-VN'; if(viVoice) u.voice=viVoice; u.rate=rate; u.pitch=1.12;
+      u.onend=()=>{ stopTalk(); setTimeout(fin,250); }; u.onerror=()=>setTimeout(fin,est);
       speechSynthesis.speak(u);
       setTimeout(fin, est+4000); // safety net if onend never fires
       return;
@@ -526,7 +683,7 @@ const ACTS = [
 /* ---------- Screens ---------- */
 const app = document.getElementById('app');
 let run = null;
-const starsHtml = (n,cls='stars') => `<span class="${cls}" aria-label="${n} sao">${[1,2,3].map(i=>`<span class="${i<=n?'':'off'}">★</span>`).join('')}</span>`;
+const starsHtml = (n,cls='stars') => `<span class="${cls}" aria-label="${n} sao">${[1,2,3].map(i=>`<span class="st ${i<=n?'':'off'}">${ic('⭐')}</span>`).join('')}</span>`;
 
 function home(speak){
   hush(); run=null;
@@ -534,7 +691,7 @@ function home(speak){
   app.innerHTML = `
   <div class="top">
     <div class="brand"><div class="badge face">${faceGirl()}</div><div><h1>Tập Làm Chị</h1><p>Chọn một trò chơi nha!</p></div></div>
-    <span class="chip"><span class="emo">⭐</span> ${got}/${ACTS.length} huy hiệu</span>
+    <span class="chip">${ic('⭐')} ${got}/${ACTS.length} huy hiệu</span>
     <button class="small press" id="toParent">Người lớn</button>
   </div>
   <div class="grid">${ACTS.map((a,i)=>`
@@ -552,9 +709,9 @@ function home(speak){
 function shell(act){
   app.innerHTML = `
   <div class="bar">
-    <button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button>
+    <button class="round press" id="goHome" aria-label="Về màn hình chính">${ic('🏠')}</button>
     <div class="dots">${act.stages.map(()=>'<i></i>').join('')}</div>
-    <button class="round press" id="again" aria-label="Nghe lại"><span class="emo">🔊</span></button>
+    <button class="round press" id="again" aria-label="Nghe lại">${ic('🔊')}</button>
   </div>
   <div class="bubble block"><span class="who face">${faceMom()}</span><p></p></div>
   <div class="stage" id="stage"></div>`;
@@ -566,8 +723,8 @@ function intro(act){
   hush();
   run = {act, idx:0, miss:0};
   app.innerHTML = `
-  <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button><div class="dots"></div>
-  <button class="round press" id="again" aria-label="Nghe lại"><span class="emo">🔊</span></button></div>
+  <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính">${ic('🏠')}</button><div class="dots"></div>
+  <button class="round press" id="again" aria-label="Nghe lại">${ic('🔊')}</button></div>
   <div class="center">
     <div class="hero">${scene(act.id)}</div>
     <h2>${act.title}</h2>
@@ -631,12 +788,12 @@ function seqStage(st, el, done){
   const slots = el.querySelectorAll('.slot');
   say(st.prompt);
   el.querySelectorAll('.card').forEach(c=>c.onclick=()=>{
-    if(busy) return;
+    if(busy || c.classList.contains('go-slot')) return;
     const step = steps[cur];
     if(c.dataset.k === step.k){
       sfx.good(); wrong=0; react(el,'good');
       el.querySelectorAll('.hint').forEach(h=>h.classList.remove('hint'));
-      c.classList.add('used');
+      c.classList.add('go-slot'); setTimeout(()=>c.classList.add('used'),450);
       slots[cur].innerHTML = ic(step.i); slots[cur].classList.add('fill');
       cur++;
       const after = ()=>{ busy=false; if(cur===steps.length){ busy=true; setTimeout(done,500); } };
@@ -647,7 +804,7 @@ function seqStage(st, el, done){
       sfx.oops(); run.miss++; wrong++; react(el,'oops');
       c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
       say(wrong>=2 ? 'Bước tiếp theo là: '+step.t+'. Tìm thẻ đang sáng nha!' : 'Chưa phải bước này. Thử thẻ khác nha!');
-      if(wrong>=2) el.querySelector(`.card[data-k="${step.k}"]:not(.used)`)?.classList.add('hint');
+      if(wrong>=2) el.querySelector(`.card[data-k="${step.k}"]:not(.used):not(.go-slot)`)?.classList.add('hint');
     }
   });
 }
@@ -665,7 +822,7 @@ function rubGame(el, cb){
     const r=o.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
     if(last) dist+=Math.hypot(x-last.x,y-last.y);
     last={x,y};
-    if(Math.random()<.18){ const b=document.createElement('span'); b.className='fx emo'; b.textContent='🫧'; b.style.left=x+'px'; b.style.top=y+'px'; o.appendChild(b); setTimeout(()=>b.remove(),1100); }
+    if(Math.random()<.18){ const b=document.createElement('span'); b.className='fx'; b.innerHTML=ic('🫧'); b.style.left=x+'px'; b.style.top=y+'px'; o.appendChild(b); setTimeout(()=>b.remove(),1100); }
     const now=performance.now();
     if(dist>120 && now-lastTick>550){
       dist=0; lastTick=now; n++; cnt.textContent=n; bar.style.width=(n*5)+'%';
@@ -690,7 +847,7 @@ function wipeStage(st, el, done){
     spots.forEach(s=>{ if(s._d<=0) return; const r=s.getBoundingClientRect();
       if(Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) < r.width*.75){
         s._d-=.06; s.style.opacity=Math.max(0,s._d);
-        if(s._d<=0){ sfx.tick(); const f=document.createElement('span'); f.className='fx emo'; f.textContent='✨'; f.style.left=s.style.left; f.style.top=s.style.top; tbl.appendChild(f); setTimeout(()=>f.remove(),1100); }
+        if(s._d<=0){ sfx.tick(); const f=document.createElement('span'); f.className='fx'; f.innerHTML=ic('✨'); f.style.left=s.style.left; f.style.top=s.style.top; tbl.appendChild(f); setTimeout(()=>f.remove(),1100); }
       }});
     if(spots.every(s=>s._d<=0)){ fin=true; sfx.good(); say(st.done, ()=>setTimeout(done,300)); }
   };
@@ -733,15 +890,15 @@ function quizStage(st, el, done){
   const play=()=>{
     const R=rounds[r]; let opts, ans, wrong=0, busy=false;
     if(R.opts){ opts=shuffle(R.opts.map((o,j)=>({...o,k:'o'+j}))); ans='o0'; } else { opts=st.opts; ans=R.ans; }
-    el.innerHTML=`${st.hearts?`<div class="hearts">${rounds.map((_,i)=>`<span class="emo ${i<r?'':'off'}">❤️</span>`).join('')}</div>`:''}
-      <div class="scene">${R.who.includes(':')?`<span class="who">${charSvg(R.who)}</span>`:`<span class="who emo">${R.who}</span>`}<span class="cue">${ic(R.cue)}</span><span class="buddy">${buddy()}</span></div>
+    el.innerHTML=`${st.hearts?`<div class="hearts">${rounds.map((_,i)=>`<span class="hrt ${i<r?'':'off'}">${ic('❤️')}</span>`).join('')}</div>`:''}
+      <div class="scene">${R.who.includes(':')?`<span class="who">${charSvg(R.who)}</span>`:`<span class="who">${ic(R.who)}</span>`}<span class="cue">${ic(R.cue)}</span><span class="buddy">${buddy()}</span></div>
       <div class="opts">${opts.map(o=>`<button class="opt block press" data-k="${o.k}"><span class="big">${ic(o.i)}</span>${T(o.t)}</button>`).join('')}</div>`;
     say(R.q);
     el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
       if(busy) return;
       if(b.dataset.k===ans){
         busy=true; sfx.good(); react(el,'good'); b.classList.remove('hint'); b.classList.add('yes');
-        const h=el.querySelectorAll('.hearts span')[r]; if(h) h.classList.remove('off');
+        const h=el.querySelectorAll('.hearts .hrt')[r]; if(h) h.classList.remove('off');
         say(R.why, ()=>{ r++; r<rounds.length ? play() : done(); });
       } else {
         sfx.oops(); run.miss++; wrong++; react(el,'oops'); b.classList.add('no');
@@ -775,16 +932,18 @@ function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;',
 function parent(){
   hush(); pickVoice();
   app.innerHTML = `
-  <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button><h2 style="flex:1">Dành cho bố mẹ</h2></div>
+  <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính">${ic('🏠')}</button><h2 style="flex:1">Dành cho bố mẹ</h2></div>
   <div class="parent">
     <section>
       <h3>Cài đặt</h3>
       <div class="form">
         <label>Bé được gọi là<input type="text" id="fChi" value="${esc(S.chi)}" placeholder="vd: chị Na"></label>
         <label>Em bé được gọi là<input type="text" id="fEm" value="${esc(S.em)}" placeholder="vd: em Bin"></label>
+        <label>Giọng đọc<select id="fVname">${viVoices.length?viVoices.map(v=>`<option value="${esc(v.name)}" ${viVoice&&v.name===viVoice.name?'selected':''}>${esc(v.name)}</option>`).join(''):'<option>Chưa có giọng tiếng Việt</option>'}</select></label>
+        <label>Tốc độ đọc<select id="fRate">${[[.6,'Rất chậm'],[.75,'Chậm (nên dùng)'],[.9,'Vừa']].map(([v,t])=>`<option value="${v}" ${Math.abs((S.rate||.75)-v)<.01?'selected':''}>${t}</option>`).join('')}</select></label>
         <label class="tog"><input type="checkbox" id="fVoice" ${S.voice?'checked':''}> Đọc to lời hướng dẫn</label>
       </div>
-      <p class="note" id="vStat">${viVoice?'Đã tìm thấy giọng đọc tiếng Việt: '+esc(viVoice.name)+'.':'Chưa thấy giọng đọc tiếng Việt trên máy này. Android: cài "Dịch vụ chuyển văn bản thành giọng nói của Google" và tải gói tiếng Việt. iPad/iPhone: Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → Tiếng Việt (Linh). Không có giọng đọc thì bố mẹ đọc chữ trong bong bóng cho con nghe.'}</p>
+      <p class="note" id="vStat">${viVoice?'Đã tìm thấy giọng đọc tiếng Việt: '+esc(viVoice.name)+'.':'Chưa thấy giọng đọc tiếng Việt trên máy này. Máy tính Windows: dùng trình duyệt Microsoft Edge (có giọng nữ HoaiMy rất tự nhiên). Android: cài "Dịch vụ chuyển văn bản thành giọng nói của Google" và tải gói tiếng Việt. iPad/iPhone: Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → Tiếng Việt (Linh). Không có giọng đọc thì bố mẹ đọc chữ trong bong bóng cho con nghe.'}</p>
       <div class="row" style="justify-content:flex-start"><button class="small press" id="test">Nghe thử giọng</button><button class="small warn press" id="reset">Xóa huy hiệu, chơi lại từ đầu</button></div>
     </section>
     <section>
@@ -840,6 +999,9 @@ function parent(){
   fChi.oninput=()=>{ S.chi=fChi.value; save(); };
   fEm.oninput=()=>{ S.em=fEm.value; save(); };
   fV.onchange=()=>{ S.voice=fV.checked; save(); };
+  const fN=document.getElementById('fVname'), fR=document.getElementById('fRate');
+  fN.onchange=()=>{ S.voiceName=fN.value; save(); pickVoice(); say('Chào {chi}! Đây là giọng đọc mới.'); };
+  fR.onchange=()=>{ S.rate=+fR.value; save(); say('Chào {chi}! Mình đọc chậm như thế này nha.'); };
   document.getElementById('test').onclick=()=>say('Chào {chi}! Mình cùng tập làm chị nha.');
   const rb=document.getElementById('reset'); let armed=false;
   rb.onclick=()=>{ if(!armed){ armed=true; rb.textContent='Bấm lần nữa để xóa'; setTimeout(()=>{armed=false; rb.textContent='Xóa huy hiệu, chơi lại từ đầu';},4000); return; }
