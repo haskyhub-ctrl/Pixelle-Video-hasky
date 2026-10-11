@@ -37,6 +37,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 @media (max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .act{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 10px 12px;text-align:center;min-height:150px;background:var(--tint,var(--paper))}
 .act .big{font-size:clamp(48px,9vw,68px)}
+.act{padding-top:8px}
 .act h3{font-size:clamp(18px,2.6vw,23px);font-weight:800}
 .stars{font-size:20px;letter-spacing:2px;color:var(--ink)}
 .stars .off{opacity:.22}
@@ -73,7 +74,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 
 /* Overlay mini-games */
 .over{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--paper-soft);border:var(--edge);border-radius:var(--r);touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
-.rubzone{font-size:clamp(110px,22vw,170px);animation:bob 2s ease-in-out infinite}
+.rubzone{width:clamp(150px,30vw,220px);animation:bob 2s ease-in-out infinite}
 .count{font-family:var(--display);font-size:64px;font-weight:800;line-height:1}
 .meter{width:min(420px,80%);height:24px;border:var(--edge);border-radius:999px;background:var(--paper);overflow:hidden}
 .meter span{display:block;height:100%;width:0;background:var(--sky);transition:width .2s}
@@ -94,7 +95,7 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 
 /* Quiz */
 .scene{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px;flex-wrap:wrap}
-.scene .who{font-size:clamp(90px,16vw,130px);animation:bob 2.4s ease-in-out infinite}
+.scene .who{width:clamp(130px,26vw,200px);font-size:clamp(90px,16vw,130px);animation:bob 2.4s ease-in-out infinite}
 .scene .cue{font-size:clamp(46px,8vw,64px);background:var(--paper);border:var(--edge);border-radius:50%;width:1.6em;height:1.6em;display:grid;place-items:center;box-shadow:0 4px 0 var(--ink)}
 .opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .opts.six{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -112,12 +113,13 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 .crib::after{content:"";position:absolute;left:6%;right:6%;bottom:8%;height:34%;background:var(--sky);border:var(--edge);border-radius:14px}
 .crib .it{position:absolute;z-index:2;transform:translate(-50%,-50%);font-size:clamp(56px,10vw,84px);background:none;border:0;padding:6px;transition:transform .5s,opacity .5s}
 .crib .it.gone{transform:translate(-50%,-260%) scale(.4);opacity:0;pointer-events:none}
-.crib .sleeper{position:absolute;z-index:2;left:50%;bottom:16%;font-size:clamp(56px,10vw,80px);transform:translateX(-50%);animation:pop .5s}
+.crib .sleeper{position:absolute;z-index:2;left:50%;bottom:12%;width:30%;transform:translateX(-50%);animation:pop .5s}
 .zz{position:absolute;z-index:2;left:62%;bottom:44%;font-family:var(--display);font-weight:800;font-size:30px;animation:rise 2s infinite}
 
 /* Intro & done */
 .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
-.hero{font-size:clamp(110px,24vw,180px);animation:bob 2.4s ease-in-out infinite}
+.hero{width:min(460px,86vw);animation:bob 2.6s ease-in-out infinite}
+.center .bubble{max-width:640px}
 .center h2{font-size:clamp(34px,6vw,54px);font-weight:800}
 .go{padding:16px 40px;font-family:var(--display);font-size:30px;font-weight:800;background:var(--coral);color:var(--paper)}
 .go.alt{background:var(--paper);color:var(--ink)}
@@ -147,6 +149,18 @@ h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
 .tbl th,.tbl td{border-bottom:2px solid var(--wall);padding:8px;text-align:left;vertical-align:top}
 .tbl th{font-family:var(--display);font-size:18px}
 
+.art{display:block;width:100%;max-width:280px}
+.art svg,.hero svg,.who svg,.buddy svg,.face svg{display:block;width:100%;height:auto}
+.face{display:block;border-radius:50%;overflow:hidden;background:var(--paper-soft);border:var(--edge)}
+.bubble .face{width:58px;height:58px;flex:none}
+.brand .badge.face{background:var(--sun);padding:0}
+.duo{display:flex;align-items:center;justify-content:center;gap:10px}
+.duo>.sortcard,.duo>.slots{min-width:0;flex:1 1 auto}
+.buddy{width:clamp(78px,16vw,120px);flex:none}
+.buddy.jump{animation:jump .55s}
+.winrow{display:flex;align-items:flex-end;justify-content:center;gap:12px}
+.winrow .buddy{width:clamp(130px,28vw,190px)}
+@keyframes jump{40%{transform:translateY(-18px)}}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
 @keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
 @keyframes glow{50%{box-shadow:0 6px 0 var(--ink),0 0 0 8px var(--sun)}}
@@ -172,6 +186,152 @@ const SVG = {
   wipes:'<svg viewBox="0 0 64 64"><rect x="6" y="20" width="52" height="32" rx="10" fill="#fff" stroke="#1E3A4C" stroke-width="3"/><rect x="20" y="16" width="24" height="12" rx="5" fill="#93E0C3" stroke="#1E3A4C" stroke-width="3"/><path d="M26 18q6-10 12 0" fill="#fff" stroke="#1E3A4C" stroke-width="2"/></svg>'
 };
 function ic(k){ return k.startsWith('svg:') ? `<span class="ico">${SVG[k.slice(4)]}</span>` : `<span class="emo">${k}</span>`; }
+
+/* ---------- Characters: chị (big sister), mẹ (mom), em bé (baby). Hand-drawn SVG, one style. ---------- */
+const C = {skin:'#FFDCC4', shade:'#F4BFA0', hair:'#4A2E2A', hair2:'#6B4238', ink:'#2B2230', cheek:'#FF8FA3', mouth:'#C9404F', tongue:'#FF8E9B',
+  coral:'#FF7A66', coralD:'#E45C4B', lilac:'#B9A6F5', lilacD:'#9A85E6', mint:'#93E0C3', mintD:'#6CCBA8', sun:'#FFC845', sunD:'#F2A81D', blue:'#7CC3F0', white:'#FFFFFF'};
+const svg = (inner, vb) => `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${inner}</svg>`;
+const place = (inner, x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})">${inner}</g>`;
+
+function eyes(xs, y, t, r=1){
+  const st = `fill="none" stroke="${C.ink}" stroke-width="${4*r}" stroke-linecap="round" stroke-linejoin="round"`;
+  return xs.map((x,i)=>{
+    switch(t){
+      case 'joy': return `<path d="M${x-8*r} ${y+3*r} Q${x} ${y-8*r} ${x+8*r} ${y+3*r}" ${st}/>`;
+      case 'closed': return `<path d="M${x-8*r} ${y-1*r} Q${x} ${y+7*r} ${x+8*r} ${y-1*r}" ${st}/>`;
+      case 'squeeze': return i===0 ? `<path d="M${x-7*r} ${y-6*r} L${x+5*r} ${y} L${x-7*r} ${y+6*r}" ${st}/>` : `<path d="M${x+7*r} ${y-6*r} L${x-5*r} ${y} L${x+7*r} ${y+6*r}" ${st}/>`;
+      case 'half': return `<path d="M${x-8*r} ${y} Q${x} ${y+6*r} ${x+8*r} ${y}" ${st}/><path d="M${x-9*r} ${y-3*r} L${x+9*r} ${y-3*r}" ${st} stroke-width="${3*r}" opacity=".55"/>`;
+      case 'up': return `<ellipse cx="${x}" cy="${y}" rx="${6.5*r}" ry="${8.5*r}" fill="${C.ink}"/><circle cx="${x+1.5*r}" cy="${y-5*r}" r="${2.6*r}" fill="#fff"/>`;
+      default: return `<ellipse cx="${x}" cy="${y}" rx="${6.5*r}" ry="${8.5*r}" fill="${C.ink}"/><circle cx="${x+2.2*r}" cy="${y-3*r}" r="${2.8*r}" fill="#fff"/><circle cx="${x-2*r}" cy="${y+3*r}" r="${1.2*r}" fill="#fff"/>`;
+    }
+  }).join('');
+}
+function mouth(x, y, t, r=1){
+  const st = `fill="none" stroke="${C.ink}" stroke-width="${3.5*r}" stroke-linecap="round"`;
+  switch(t){
+    case 'grin': return `<path d="M${x-12*r} ${y-2*r} Q${x} ${y+18*r} ${x+12*r} ${y-2*r} Z" fill="${C.mouth}"/><path d="M${x-6*r} ${y+7*r} Q${x} ${y+3*r} ${x+6*r} ${y+7*r} Q${x} ${y+12*r} ${x-6*r} ${y+7*r}Z" fill="${C.tongue}"/>`;
+    case 'o': return `<ellipse cx="${x}" cy="${y+3*r}" rx="${5*r}" ry="${6*r}" fill="${C.mouth}"/>`;
+    case 'small': return `<ellipse cx="${x}" cy="${y+2*r}" rx="${3*r}" ry="${2.5*r}" fill="${C.mouth}"/>`;
+    case 'wail': return `<ellipse cx="${x}" cy="${y+5*r}" rx="${11*r}" ry="${12*r}" fill="${C.mouth}"/><ellipse cx="${x}" cy="${y+12*r}" rx="${6*r}" ry="${4*r}" fill="${C.tongue}"/>`;
+    case 'yawn': return `<ellipse cx="${x}" cy="${y+5*r}" rx="${8*r}" ry="${11*r}" fill="${C.mouth}"/>`;
+    case 'flat': return `<path d="M${x-6*r} ${y+3*r} L${x+6*r} ${y+3*r}" ${st}/>`;
+    case 'sad': return `<path d="M${x-8*r} ${y+7*r} Q${x} ${y-1*r} ${x+8*r} ${y+7*r}" ${st}/>`;
+    default: return `<path d="M${x-10*r} ${y} Q${x} ${y+11*r} ${x+10*r} ${y}" ${st}/>`;
+  }
+}
+const cheeks = (xs, y, r=1, k=1) => xs.map(x=>`<ellipse cx="${x}" cy="${y}" rx="${9*r*k}" ry="${6*r*k}" fill="${C.cheek}" opacity="${k>1?.85:.6}"/>`).join('');
+const drop = (x,y,s=1) => `<path d="M${x} ${y} q${-7*s} ${10*s} 0 ${14*s} q${7*s} ${-4*s} 0 ${-14*s}z" fill="${C.blue}" stroke="${C.ink}" stroke-width="1.5"/>`;
+const zzz = (x,y) => `<g font-family="Baloo 2, Nunito, sans-serif" font-weight="800" fill="${C.lilacD}"><text x="${x}" y="${y}" font-size="22">z</text><text x="${x+14}" y="${y-14}" font-size="17">z</text><text x="${x+25}" y="${y-26}" font-size="13">z</text></g>`;
+const heart = (x,y,s=1,f=C.coral) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 6 C-10 -6 -22 4 -12 14 L0 26 L12 14 C22 4 10 -6 0 6Z" fill="${f}" stroke="${C.ink}" stroke-width="2"/>`;
+const sparkle = (x,y,s=1,f=C.sun) => `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -12 L3 -3 L12 0 L3 3 L0 12 L-3 3 L-12 0 L-3 -3Z" fill="${f}"/>`;
+const DIAPER = `<path d="M6 16h52l-4 13c-3 10-10 19-22 21C20 48 13 39 10 29z" fill="#fff" stroke="#5AAEE3" stroke-width="4" stroke-linejoin="round"/><rect x="3" y="12" width="13" height="9" rx="3" fill="${C.sun}" stroke="${C.ink}" stroke-width="2"/><rect x="48" y="12" width="13" height="9" rx="3" fill="${C.sun}" stroke="${C.ink}" stroke-width="2"/>`;
+
+/* Baby: viewBox 0 0 160 160 */
+function baby(e='happy'){
+  const F = {happy:['open','smile'], sleep:['closed','small'], cry:['squeeze','wail'], yawn:['closed','yawn'], hungry:['open','o'],
+    fever:['half','sad'], stinky:['squeeze','wail'], reach:['squeeze','wail'], calm:['joy','smile']}[e] || ['open','smile'];
+  const reach = e==='reach';
+  return `
+  ${reach?`<path d="M50 104 L30 62 M110 104 L130 62" stroke="${C.skin}" stroke-width="13" stroke-linecap="round"/><circle cx="30" cy="60" r="9" fill="${C.skin}"/><circle cx="130" cy="60" r="9" fill="${C.skin}"/>`:''}
+  <path d="M28 104 Q28 74 80 74 Q132 74 132 104 L128 140 Q80 164 32 140 Z" fill="${C.mint}" stroke="${C.ink}" stroke-width="3"/>
+  <path d="M36 104 Q80 128 124 104" fill="none" stroke="${C.mintD}" stroke-width="4" stroke-linecap="round"/>
+  <path d="M30 108 Q50 96 80 116 Q110 96 130 108" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>
+  <circle cx="43" cy="64" r="8" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/><circle cx="117" cy="64" r="8" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/>
+  <circle cx="80" cy="62" r="38" fill="${C.skin}" stroke="${C.ink}" stroke-width="3"/>
+  ${e==='fever'?`<circle cx="80" cy="62" r="36" fill="#FF5A4A" opacity=".18"/>`:''}
+  <path d="M72 26 Q78 12 90 20 Q88 30 80 27" fill="none" stroke="${C.hair}" stroke-width="4" stroke-linecap="round"/>
+  ${eyes([66,94],62,F[0],.8)}
+  ${cheeks([56,104],76,.8,(e==='fever'||e==='cry'||e==='reach'||e==='stinky')?1.4:1)}
+  ${mouth(80,78,F[1],.8)}
+  ${(e==='cry'||e==='reach'||e==='stinky')?drop(54,70,.8)+drop(106,70,.8):''}
+  ${e==='fever'?drop(112,36,.9):''}
+  ${e==='hungry'?`<circle cx="102" cy="88" r="11" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/><path d="M58 90 l-6 4 M60 96 l-7 1" stroke="${C.ink}" stroke-width="2" stroke-linecap="round"/>`:''}
+  ${e==='sleep'?zzz(112,40):''}
+  ${e==='stinky'?`<path d="M120 150 q6 -8 0 -16 q-6 -8 0 -16 M134 146 q6 -8 0 -16 q-6 -8 0 -16" fill="none" stroke="#7DBB45" stroke-width="4" stroke-linecap="round"/>`:''}`;
+}
+
+/* Big sister: viewBox 0 0 200 260 */
+function girl({e='open', m='smile', pose='down', prop='', sweat=false}={}){
+  const A = pose==='up' ? [[72,158,44,110],[128,158,156,110]] : pose==='front' ? [[72,160,88,190],[128,160,112,190]] : pose==='wave' ? [[72,160,56,204],[128,158,158,112]] : [[72,160,56,204],[128,160,144,204]];
+  const bow = (x,y)=>`<path d="M${x} ${y} l-15 -11 v22z M${x} ${y} l15 -11 v22z" fill="${C.sun}" stroke="${C.ink}" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${x}" cy="${y}" r="5" fill="${C.sunD}" stroke="${C.ink}" stroke-width="2"/>`;
+  let P='';
+  if(prop==='doll') P = place(baby('calm'), 64, 156, .45);
+  if(prop==='basket') P = `<circle cx="84" cy="176" r="12" fill="${C.blue}" stroke="${C.ink}" stroke-width="2.5"/><rect x="98" y="164" width="20" height="20" rx="4" fill="${C.sun}" stroke="${C.ink}" stroke-width="2.5"/><path d="M66 182 h68 l-8 36 h-52 z" fill="#D9995A" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/><path d="M72 194 h56 M76 206 h48" stroke="#B87638" stroke-width="3"/>`;
+  if(prop==='diaper') P = place(DIAPER, 74, 162, .8);
+  if(prop==='heart') P = heart(100,172,1.3);
+  if(prop==='bubbles') P = [[78,176,9],[120,170,12],[100,160,7],[136,190,8],[66,196,7],[104,196,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".75" stroke="${C.blue}" stroke-width="2.5"/><circle cx="${x-r*.35}" cy="${y-r*.35}" r="${r*.25}" fill="#fff"/>`).join('');
+  if(prop==='cup') P = `<path d="M88 168 h24 l-3 30 h-18z" fill="#DFF3FF" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/><path d="M90 178 h20" stroke="${C.blue}" stroke-width="6"/>`;
+  return `
+  <ellipse cx="100" cy="246" rx="58" ry="8" fill="${C.ink}" opacity=".12"/>
+  <circle cx="34" cy="108" r="24" fill="${C.hair}" stroke="${C.ink}" stroke-width="3"/><circle cx="166" cy="108" r="24" fill="${C.hair}" stroke="${C.ink}" stroke-width="3"/>
+  <rect x="80" y="196" width="16" height="42" rx="8" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/><rect x="104" y="196" width="16" height="42" rx="8" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/>
+  <ellipse cx="85" cy="241" rx="15" ry="8" fill="${C.coralD}" stroke="${C.ink}" stroke-width="2.5"/><ellipse cx="115" cy="241" rx="15" ry="8" fill="${C.coralD}" stroke="${C.ink}" stroke-width="2.5"/>
+  <rect x="91" y="128" width="18" height="24" fill="${C.skin}"/>
+  <path d="M72 150 Q100 138 128 150 L152 212 Q100 230 48 212 Z" fill="${C.coral}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="80" cy="196" r="4" fill="#fff" opacity=".8"/><circle cx="118" cy="204" r="4" fill="#fff" opacity=".8"/><circle cx="100" cy="186" r="4" fill="#fff" opacity=".8"/><circle cx="132" cy="186" r="3.5" fill="#fff" opacity=".8"/><circle cx="68" cy="210" r="3.5" fill="#fff" opacity=".8"/>
+  <path d="M82 146 Q90 164 100 152 Q110 164 118 146 Q100 140 82 146Z" fill="#fff" stroke="${C.ink}" stroke-width="2.5" stroke-linejoin="round"/>
+  ${A.map(([x1,y1,x2,y2])=>`<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.ink}" stroke-width="19" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.skin}" stroke-width="13" stroke-linecap="round"/><circle cx="${x1}" cy="${y1}" r="12" fill="${C.coral}" stroke="${C.ink}" stroke-width="3"/>`).join('')}
+  ${P}
+  <circle cx="100" cy="90" r="64" fill="${C.hair}" stroke="${C.ink}" stroke-width="3"/>
+  <ellipse cx="100" cy="100" rx="53" ry="48" fill="${C.skin}"/>
+  <path d="M42 96 Q40 30 100 26 Q160 30 158 96 Q150 66 134 58 Q122 76 100 66 Q80 78 64 60 Q50 70 42 96 Z" fill="${C.hair}"/>
+  <path d="M70 44 Q86 34 104 36" fill="none" stroke="${C.hair2}" stroke-width="5" stroke-linecap="round"/>
+  ${bow(50,62)}${bow(150,62)}
+  ${eyes([80,120],104,e)}
+  ${cheeks([66,134],122)}
+  ${mouth(100,124,m)}
+  ${sweat?drop(146,74,1.1):''}`;
+}
+
+/* Mom: viewBox 0 0 200 260 */
+function mom({e='open', m='smile', pose='down', sweat=false, z=false}={}){
+  const arms = pose==='nursing' ? '' : `${[[64,162,52,236],[136,162,148,236]].map(([x1,y1,x2,y2])=>`<path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.ink}" stroke-width="20" stroke-linecap="round"/><path d="M${x1} ${y1} L${x2} ${y2}" stroke="${C.skin}" stroke-width="14" stroke-linecap="round"/>`).join('')}`;
+  const hold = pose==='nursing' ? `${place(baby(e==='closed'?'sleep':'calm'), 58, 150, .52)}
+    <path d="M60 164 Q54 226 116 222" fill="none" stroke="${C.ink}" stroke-width="20" stroke-linecap="round"/><path d="M60 164 Q54 226 116 222" fill="none" stroke="${C.lilac}" stroke-width="14" stroke-linecap="round"/>
+    <path d="M140 164 Q150 210 126 214" fill="none" stroke="${C.ink}" stroke-width="20" stroke-linecap="round"/><path d="M140 164 Q150 210 126 214" fill="none" stroke="${C.lilac}" stroke-width="14" stroke-linecap="round"/><circle cx="118" cy="221" r="8" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/>` : '';
+  return `
+  <circle cx="100" cy="30" r="20" fill="${C.hair}" stroke="${C.ink}" stroke-width="3"/>
+  <path d="M46 88 Q44 38 100 34 Q156 38 154 88 L158 150 Q100 168 42 150 Z" fill="${C.hair}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="90" y="122" width="20" height="24" fill="${C.skin}"/>
+  <path d="M52 156 Q100 132 148 156 L160 262 H40 Z" fill="${C.lilac}" stroke="${C.ink}" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M84 142 Q100 160 116 142" fill="${C.skin}" stroke="${C.ink}" stroke-width="2.5"/>
+  ${arms}
+  <ellipse cx="100" cy="88" rx="44" ry="47" fill="${C.skin}" stroke="${C.ink}" stroke-width="3"/>
+  <path d="M55 92 Q54 42 104 40 Q148 44 146 88 Q134 62 112 56 Q86 72 55 92 Z" fill="${C.hair}"/>
+  ${eyes([82,118],94,e,.9)}
+  ${cheeks([70,130],110,.9)}
+  ${mouth(100,112,m,.9)}
+  ${sweat?drop(140,64,1):''}
+  ${z?zzz(146,40):''}
+  ${hold}`;
+}
+
+const charSvg = k => {
+  const [c,e] = k.split(':');
+  if(c==='baby') return svg(baby(e),'0 0 160 160');
+  if(c==='mom') return svg(mom({nursing:{pose:'nursing'}, tired:{e:'half',m:'flat',sweat:true}, sleep:{e:'closed',m:'small',z:true}, sad:{e:'half',m:'sad'}, hungry:{e:'up',m:'o'}, smile:{}}[e]||{}),'0 0 200 260');
+  if(c==='girl') return svg(girl({think:{e:'up',m:'flat'}, joy:{e:'joy',m:'grin',pose:'up'}}[e]||{}),'0 0 200 260');
+  return '';
+};
+const faceMom = () => svg(mom({e:'joy'}), '48 36 104 104');
+const faceGirl = () => svg(girl({e:'joy',m:'grin'}), '24 20 152 152');
+const buddy = mood => svg(girl(mood==='good'?{e:'joy',m:'grin',pose:'up'}:mood==='oops'?{e:'open',m:'o',sweat:true}:{e:'up',m:'smile',pose:'wave'}),'0 0 200 260');
+
+/* Scenes for activity cards and intros: viewBox 0 0 320 220 */
+const crib = inner => `<rect x="40" y="60" width="240" height="140" rx="16" fill="#fff" stroke="${C.ink}" stroke-width="4"/>
+  ${Array.from({length:9},(_,i)=>`<rect x="${58+i*25}" y="66" width="7" height="100" rx="3" fill="${C.lilac}"/>`).join('')}
+  <rect x="52" y="150" width="216" height="40" rx="10" fill="${C.blue}" stroke="${C.ink}" stroke-width="3"/>${inner}`;
+const SCENES = {
+  tay: ()=> place(girl({e:'joy',m:'grin',pose:'front',prop:'bubbles'}),76,-8,.88) + [[40,60,14],[278,80,18],[262,40,10],[52,150,10]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" fill-opacity=".7" stroke="${C.blue}" stroke-width="3"/>`).join(''),
+  ta: ()=> place(girl({e:'open',m:'smile',pose:'front',prop:'doll'}),76,-8,.88) + place(DIAPER,240,40,1) + sparkle(46,60,1.4),
+  nhe: ()=> place(baby('happy'),8,64,.95) + place(girl({e:'joy',m:'smile',pose:'wave'}),150,-6,.86) + heart(150,40,1.1) + heart(120,70,.7,C.pink||'#FFB5C8'),
+  khoc: ()=> place(baby('cry'),70,14,1.25) + `<g font-family="Baloo 2, sans-serif" font-weight="800" fill="${C.ink}"><text x="36" y="80" font-size="46">?</text><text x="262" y="70" font-size="56">?</text><text x="250" y="170" font-size="34">?</text></g>`,
+  ngu: ()=> crib(place(baby('sleep'),100,38,.85)) + `<circle cx="276" cy="34" r="20" fill="${C.sun}" stroke="${C.ink}" stroke-width="3"/><circle cx="286" cy="28" r="18" fill="var(--tint,#B9A6F5)"/>` + sparkle(40,30,1) + sparkle(220,22,.8),
+  me: ()=> place(mom({e:'joy',pose:'nursing'}),20,-10,.88) + place(girl({e:'joy',m:'grin',pose:'down'}),178,48,.66) + heart(186,40,1),
+  don: ()=> place(girl({e:'open',m:'grin',pose:'front',prop:'basket'}),76,-8,.88) + sparkle(50,70,1.3) + sparkle(270,110,1) + sparkle(250,50,.7),
+  lay: ()=> place(mom({e:'open',pose:'nursing'}),16,-10,.88) + place(girl({e:'joy',m:'smile',pose:'front',prop:'diaper'}),170,40,.68) + `<text x="196" y="40" font-family="Baloo 2, sans-serif" font-weight="800" font-size="40" fill="${C.ink}">?</text>`
+};
+const scene = id => svg(SCENES[id](), '0 0 320 220');
 
 /* ---------- Saved state ---------- */
 const DEF = {chi:'chị', em:'em bé', voice:true, stars:{}, seen:false};
@@ -258,7 +418,7 @@ const ACTS = [
      {i:'🗑️', t:'Bỏ tã bẩn vào thùng rác', say:'Cuộn tã bẩn lại, bỏ vào thùng rác.'},
      {i:'🧼', k:'wash', t:'Rửa tay lần nữa', say:'Rửa tay lần nữa. Búp bê thơm tho rồi!'}]},
    {type:'quiz', rounds:[
-     {who:'👩‍🍼', cue:'svg:diaper', q:'Mẹ đang thay tã cho {em}. {chi} giúp mẹ thế nào?',
+     {who:'mom:smile', cue:'svg:diaper', q:'Mẹ đang thay tã cho {em}. {chi} giúp mẹ thế nào?',
       opts:[{i:'svg:diaper',t:'Đưa tã sạch cho mẹ'},{i:'🙌',t:'Tự bế em lên'},{i:'🧗',t:'Trèo lên bàn thay tã'}],
       why:'Đúng rồi! {chi} đưa đồ cho mẹ. Chỉ người lớn mới bế em và đặt em lên bàn thay tã.'}]}
   ]},
@@ -282,17 +442,17 @@ const ACTS = [
   intro:'Em bé chưa biết nói. Em khóc để nói cho mình biết em cần gì. {chi} làm thám tử, đoán xem em cần gì nha!',
   stages:[
    {type:'quiz', rounds:[
-     {who:'👶', cue:'👅', q:'Em mút tay, quay đầu tìm, miệng chóp chép. Em cần gì?',
+     {who:'baby:hungry', cue:'✋', q:'Em mút tay, quay đầu tìm, miệng chóp chép. Em cần gì?',
       opts:[{i:'🍼',t:'Em đói'},{i:'😴',t:'Em buồn ngủ'},{i:'🎈',t:'Em muốn chơi bóng'}], why:'Em đói rồi! {chi} gọi mẹ cho em bú nha.'},
-     {who:'👶', cue:'🥱', q:'Em dụi mắt, ngáp thật to. Em cần gì?',
+     {who:'baby:yawn', cue:'🥱', q:'Em dụi mắt, ngáp thật to. Em cần gì?',
       opts:[{i:'😴',t:'Em buồn ngủ'},{i:'🍼',t:'Em đói'},{i:'🛁',t:'Em muốn tắm'}], why:'Em buồn ngủ. {chi} hát ru thật khẽ, nói nhỏ thôi nha.'},
-     {who:'👶', cue:'svg:diaperOpen', q:'Em khóc, tã căng phồng, có mùi. Em cần gì?',
+     {who:'baby:stinky', cue:'svg:diaperOpen', q:'Em khóc, tã căng phồng, có mùi. Em cần gì?',
       opts:[{i:'svg:diaper',t:'Thay tã mới'},{i:'🎵',t:'Nghe hát'},{i:'🍪',t:'Ăn bánh'}], why:'Tã bẩn rồi. {chi} báo mẹ và lấy giúp mẹ một chiếc tã mới.'},
-     {who:'👶', cue:'🙌', q:'Em giơ tay, khóc khi nằm một mình. Em cần gì?',
+     {who:'baby:reach', cue:'🙌', q:'Em giơ tay, khóc khi nằm một mình. Em cần gì?',
       opts:[{i:'🤗',t:'Được ôm, được ở gần'},{i:'svg:diaper',t:'Thay tã'},{i:'📺',t:'Xem ti vi'}], why:'Em muốn được ôm. {chi} gọi mẹ, rồi ngồi cạnh nói chuyện với em.'},
-     {who:'👶', cue:'🌡️', q:'Người em nóng hầm hập. {chi} làm gì?',
+     {who:'baby:fever', cue:'🌡️', q:'Người em nóng hầm hập. {chi} làm gì?',
       opts:[{i:'👨‍👩‍👧',t:'Gọi bố mẹ ngay'},{i:'svg:blanket',t:'Đắp thêm chăn'},{i:'🍦',t:'Cho em ăn kem'}], why:'Đúng rồi! Em bị nóng là phải gọi bố mẹ ngay.'},
-     {who:'👶', cue:'😫', q:'Em khóc mãi, mãi không nín. {chi} làm gì?',
+     {who:'baby:cry', cue:'😫', q:'Em khóc mãi, mãi không nín. {chi} làm gì?',
       opts:[{i:'👨‍👩‍👧',t:'Gọi bố mẹ'},{i:'🫨',t:'Lắc em thật mạnh'},{i:'🚪',t:'Đóng cửa đi chỗ khác'}], why:'Gọi bố mẹ là giỏi nhất. Không bao giờ được lắc em bé nha.'}]}
   ]},
  {id:'ngu', title:'Giường ngủ an toàn', icon:'🛏️', tint:'var(--lilac)', sticker:'🌙',
@@ -304,9 +464,9 @@ const ACTS = [
      {i:'svg:blanket', x:77, y:40, say:'Lấy chăn dày ra. Chăn dày có thể trùm lên mặt em.'},
      {i:'🧩', x:40, y:62, say:'Lấy đồ chơi ra. Trong cũi chỉ có em thôi.'}]},
    {type:'quiz', rounds:[
-     {who:'🛏️', cue:'👶', q:'Em bé nằm ngủ thế nào là đúng?',
+     {who:'baby:sleep', cue:'🛏️', q:'Em bé nằm ngủ thế nào là đúng?',
       opts:[{i:'⬆️',t:'Nằm ngửa, mặt nhìn lên'},{i:'⬇️',t:'Nằm sấp, úp mặt xuống'},{i:'🛋️',t:'Ngủ trên ghế sô pha'}], why:'Đúng rồi! Em nằm ngửa để thở dễ dàng.'},
-     {who:'😴', cue:'🤫', q:'{em} đang ngủ. {chi} chơi thế nào?',
+     {who:'baby:sleep', cue:'🤫', q:'{em} đang ngủ. {chi} chơi thế nào?',
       opts:[{i:'🤫',t:'Chơi nhẹ nhàng, nói nhỏ'},{i:'🥁',t:'Đánh trống thật to'},{i:'🧗',t:'Trèo vào cũi chơi với em'}], why:'Giỏi quá! Chơi nhẹ nhàng để em ngủ ngon.'}]}
   ]},
  {id:'me', title:'Thương mẹ', icon:'🤱', tint:'var(--coral)', sticker:'🌷',
@@ -316,12 +476,12 @@ const ACTS = [
       {k:'water',i:'🥛',t:'Cốc nước'},{k:'pillow',i:'svg:pillow',t:'Cái gối'},{k:'book',i:'📚',t:'Quyển sách'},
       {k:'fruit',i:'🍌',t:'Quả chuối'},{k:'blanket',i:'svg:blanket',t:'Cái chăn'},{k:'hug',i:'🤗',t:'Cái ôm'}],
     rounds:[
-     {who:'🤱', cue:'💧', q:'Mẹ đang cho em bú. Mẹ khát nước quá!', ans:'water', why:'{chi} mang nước cho mẹ. Mẹ cho em bú nên cần uống nhiều nước lắm.'},
-     {who:'🤱', cue:'😣', q:'Mẹ ngồi lâu, mỏi lưng quá.', ans:'pillow', why:'{chi} kê gối cho mẹ. Lưng mẹ đỡ mỏi rồi.'},
-     {who:'🤱', cue:'👧', q:'Mẹ cho em bú. {chi} muốn ngồi cạnh mẹ.', ans:'book', why:'{chi} ngồi cạnh mẹ cùng xem sách. Mẹ vui lắm!'},
-     {who:'👩', cue:'😋', q:'Mẹ đói bụng rồi.', ans:'fruit', why:'Mang chuối cho mẹ. Mẹ ăn no để có sức chăm em.'},
-     {who:'🛌', cue:'💤', q:'Mẹ buồn ngủ, mẹ muốn nằm nghỉ.', ans:'blanket', why:'{chi} đắp chăn cho mẹ, rồi chơi thật yên lặng.'},
-     {who:'👩', cue:'🥺', q:'Mẹ thấy mệt và hơi buồn.', ans:'hug', why:'Một cái ôm thật chặt! Mẹ thương {chi} nhiều lắm, như ngày xưa vậy.'}]}
+     {who:'mom:nursing', cue:'💧', q:'Mẹ đang cho em bú. Mẹ khát nước quá!', ans:'water', why:'{chi} mang nước cho mẹ. Mẹ cho em bú nên cần uống nhiều nước lắm.'},
+     {who:'mom:tired', cue:'😣', q:'Mẹ ngồi lâu, mỏi lưng quá.', ans:'pillow', why:'{chi} kê gối cho mẹ. Lưng mẹ đỡ mỏi rồi.'},
+     {who:'mom:nursing', cue:'📖', q:'Mẹ cho em bú. {chi} muốn ngồi cạnh mẹ.', ans:'book', why:'{chi} ngồi cạnh mẹ cùng xem sách. Mẹ vui lắm!'},
+     {who:'mom:hungry', cue:'😋', q:'Mẹ đói bụng rồi.', ans:'fruit', why:'Mang chuối cho mẹ. Mẹ ăn no để có sức chăm em.'},
+     {who:'mom:sleep', cue:'💤', q:'Mẹ buồn ngủ, mẹ muốn nằm nghỉ.', ans:'blanket', why:'{chi} đắp chăn cho mẹ, rồi chơi thật yên lặng.'},
+     {who:'mom:sad', cue:'🥺', q:'Mẹ thấy mệt và hơi buồn.', ans:'hug', why:'Một cái ôm thật chặt! Mẹ thương {chi} nhiều lắm, như ngày xưa vậy.'}]}
   ]},
  {id:'don', title:'Dọn nhà gọn gàng', icon:'🧺', tint:'var(--mint)', sticker:'✨',
   intro:'Nhà có em bé thì sàn nhà phải thật gọn. Đồ nhỏ em có thể nuốt, nên mình cất lên cao. Cùng dọn nhà nha!',
@@ -337,7 +497,7 @@ const ACTS = [
      {i:'🎈', t:'Bóng bay xẹp', a:'R', why:'Bóng bay xẹp làm em bị hóc. Đưa cho bố mẹ cất.'}]},
    {type:'wipe', prompt:'Lau bàn thật sạch! Dùng ngón tay chà lên các vết bẩn.', done:'Bàn sạch bong rồi!'},
    {type:'quiz', rounds:[
-     {who:'👕', cue:'svg:diaperOpen', q:'Quần áo của {em} bị bẩn. Bỏ vào đâu?',
+     {who:'girl:think', cue:'👕', q:'Quần áo của {em} bị bẩn. Bỏ vào đâu?',
       opts:[{i:'🧺',t:'Giỏ đồ bẩn'},{i:'🛏️',t:'Trên giường'},{i:'🗄️',t:'Tủ quần áo sạch'}], why:'Giỏ đồ bẩn! Để mẹ giặt cho em.'}]}
   ]},
  {id:'lay', title:'Mẹ cần gì nhỉ?', icon:'👂', tint:'var(--sky)', sticker:'🏅',
@@ -347,12 +507,12 @@ const ACTS = [
       {k:'diaper',i:'svg:diaper',t:'Tã'},{k:'wipes',i:'svg:wipes',t:'Khăn ướt'},{k:'towel',i:'svg:towel',t:'Khăn tắm'},
       {k:'shirt',i:'👕',t:'Áo của em'},{k:'socks',i:'🧦',t:'Đôi tất'},{k:'hat',i:'🧢',t:'Cái mũ'}],
     rounds:[
-     {who:'👩‍🍼', cue:'❓', q:'Mẹ cần một chiếc tã.', ans:'diaper', why:'Đây là tã. Cảm ơn trợ lý nhỏ!'},
-     {who:'👩‍🍼', cue:'❓', q:'Mẹ cần khăn ướt.', ans:'wipes', why:'Khăn ướt đây ạ!'},
-     {who:'👩‍🍼', cue:'❓', q:'Em tắm xong rồi. Mẹ cần khăn tắm.', ans:'towel', why:'Khăn tắm để lau khô người cho em.'},
-     {who:'👩‍🍼', cue:'❓', q:'Mẹ cần áo cho em mặc.', ans:'shirt', why:'Áo của em đây ạ!'},
-     {who:'👩‍🍼', cue:'❓', q:'Chân em lạnh. Mẹ cần đôi tất.', ans:'socks', why:'Đi tất cho em ấm chân.'},
-     {who:'👩‍🍼', cue:'❓', q:'Ra ngoài trời nắng. Mẹ cần cái mũ.', ans:'hat', why:'Đội mũ cho em đỡ nắng.'}]}
+     {who:'mom:nursing', cue:'❓', q:'Mẹ cần một chiếc tã.', ans:'diaper', why:'Đây là tã. Cảm ơn trợ lý nhỏ!'},
+     {who:'mom:nursing', cue:'❓', q:'Mẹ cần khăn ướt.', ans:'wipes', why:'Khăn ướt đây ạ!'},
+     {who:'mom:nursing', cue:'❓', q:'Em tắm xong rồi. Mẹ cần khăn tắm.', ans:'towel', why:'Khăn tắm để lau khô người cho em.'},
+     {who:'mom:nursing', cue:'❓', q:'Mẹ cần áo cho em mặc.', ans:'shirt', why:'Áo của em đây ạ!'},
+     {who:'mom:nursing', cue:'❓', q:'Chân em lạnh. Mẹ cần đôi tất.', ans:'socks', why:'Đi tất cho em ấm chân.'},
+     {who:'mom:nursing', cue:'❓', q:'Ra ngoài trời nắng. Mẹ cần cái mũ.', ans:'hat', why:'Đội mũ cho em đỡ nắng.'}]}
   ]}
 ];
 
@@ -366,13 +526,13 @@ function home(speak){
   const got = ACTS.filter(a=>S.stars[a.id]).length;
   app.innerHTML = `
   <div class="top">
-    <div class="brand"><div class="badge emo">👧</div><div><h1>Tập Làm Chị</h1><p>Chọn một trò chơi nha!</p></div></div>
+    <div class="brand"><div class="badge face">${faceGirl()}</div><div><h1>Tập Làm Chị</h1><p>Chọn một trò chơi nha!</p></div></div>
     <span class="chip"><span class="emo">⭐</span> ${got}/${ACTS.length} huy hiệu</span>
     <button class="small press" id="toParent">Người lớn</button>
   </div>
   <div class="grid">${ACTS.map((a,i)=>`
     <button class="act block press" data-i="${i}" style="--tint:${a.tint}">
-      <span class="big">${ic(a.icon)}</span><h3>${a.title}</h3>${starsHtml(S.stars[a.id]||0)}
+      <span class="art">${scene(a.id)}</span><h3>${a.title}</h3>${starsHtml(S.stars[a.id]||0)}
     </button>`).join('')}</div>
   <div class="board block"><h2>Bảng huy hiệu của ${esc(T('{chi}'))}</h2>
     <div class="stickers">${ACTS.map(a=>`<div class="stk ${S.stars[a.id]?'on':''}" title="${a.title}">${ic(a.sticker)}</div>`).join('')}</div>
@@ -389,7 +549,7 @@ function shell(act){
     <div class="dots">${act.stages.map(()=>'<i></i>').join('')}</div>
     <button class="round press" id="again" aria-label="Nghe lại"><span class="emo">🔊</span></button>
   </div>
-  <div class="bubble block"><span class="who emo">👩</span><p></p></div>
+  <div class="bubble block"><span class="who face">${faceMom()}</span><p></p></div>
   <div class="stage" id="stage"></div>`;
   document.getElementById('goHome').onclick=()=>home(true);
   document.getElementById('again').onclick=()=>say(lastSay);
@@ -402,9 +562,9 @@ function intro(act){
   <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button><div class="dots"></div>
   <button class="round press" id="again" aria-label="Nghe lại"><span class="emo">🔊</span></button></div>
   <div class="center">
-    <div class="hero">${ic(act.icon)}</div>
+    <div class="hero">${scene(act.id)}</div>
     <h2>${act.title}</h2>
-    <div class="bubble block" id="bubble"><span class="who emo">👩</span><p></p></div>
+    <div class="bubble block" id="bubble"><span class="who face">${faceMom()}</span><p></p></div>
     <button class="go block press" id="start">Bắt đầu</button>
   </div>`;
   document.getElementById('goHome').onclick=()=>home(true);
@@ -432,10 +592,10 @@ function finish(){
   sfx.win(); confetti();
   app.innerHTML = `
   <div class="center">
-    <div class="medal">${ic(act.sticker)}</div>
+    <div class="winrow"><div class="buddy jump">${buddy('good')}</div><div class="medal">${ic(act.sticker)}</div></div>
     <h2>Giỏi quá!</h2>
     ${starsHtml(n,'bigstars')}
-    <div class="bubble block" id="bubble"><span class="who emo">👩</span><p></p></div>
+    <div class="bubble block" id="bubble"><span class="who face">${faceMom()}</span><p></p></div>
     <div class="row"><button class="go block press" id="more">Chơi trò khác</button><button class="go alt block press" id="redo">Chơi lại</button></div>
   </div>`;
   document.getElementById('more').onclick=()=>home(true);
@@ -452,10 +612,14 @@ function confetti(){
 }
 
 /* ---------- Game engines ---------- */
+function react(el, mood){
+  el.querySelectorAll('.buddy').forEach(b=>{ b.innerHTML=buddy(mood); b.classList.remove('jump'); void b.offsetWidth; if(mood==='good') b.classList.add('jump'); });
+  clearTimeout(react.t); react.t=setTimeout(()=>el.querySelectorAll('.buddy').forEach(b=>b.innerHTML=buddy()),1800);
+}
 function seqStage(st, el, done){
   const steps = st.steps.map((s,i)=>({...s, k:s.k||('s'+i)}));
   let cur=0, wrong=0, busy=false;
-  el.innerHTML = `<div class="slots">${steps.map((s,i)=>`<div class="slot"><b>${i+1}</b></div>`).join('')}</div>
+  el.innerHTML = `<div class="duo"><div class="buddy">${buddy()}</div><div class="slots">${steps.map((s,i)=>`<div class="slot"><b>${i+1}</b></div>`).join('')}</div></div>
     <div class="cards">${shuffle(steps).map(s=>`<button class="card block press" data-k="${s.k}"><span class="big">${ic(s.i)}</span>${s.t}</button>`).join('')}</div>`;
   const slots = el.querySelectorAll('.slot');
   say(st.prompt);
@@ -463,7 +627,7 @@ function seqStage(st, el, done){
     if(busy) return;
     const step = steps[cur];
     if(c.dataset.k === step.k){
-      sfx.good(); wrong=0;
+      sfx.good(); wrong=0; react(el,'good');
       el.querySelectorAll('.hint').forEach(h=>h.classList.remove('hint'));
       c.classList.add('used');
       slots[cur].innerHTML = ic(step.i); slots[cur].classList.add('fill');
@@ -473,7 +637,7 @@ function seqStage(st, el, done){
       if(step.rub) say(step.say, ()=>rubGame(el, after));
       else say(step.say, after);
     } else {
-      sfx.oops(); run.miss++; wrong++;
+      sfx.oops(); run.miss++; wrong++; react(el,'oops');
       c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
       say(wrong>=2 ? 'Bước tiếp theo là: '+step.t+'. Tìm thẻ đang sáng nha!' : 'Chưa phải bước này. Thử thẻ khác nha!');
       if(wrong>=2) el.querySelector(`.card[data-k="${step.k}"]:not(.used)`)?.classList.add('hint');
@@ -483,7 +647,7 @@ function seqStage(st, el, done){
 
 function rubGame(el, cb){
   const o=document.createElement('div'); o.className='over';
-  o.innerHTML=`<div class="rubzone emo">👐</div><div class="count">0</div><div class="meter"><span></span></div><div class="hand-tip">Xoa ngón tay qua lại trên màn hình. Đếm đến hai mươi!</div>`;
+  o.innerHTML=`<div class="rubzone">${svg(girl({e:'joy',m:'grin',pose:'front',prop:'bubbles'}),'0 0 200 260')}</div><div class="count">0</div><div class="meter"><span></span></div><div class="hand-tip">Xoa ngón tay qua lại trên màn hình. Đếm đến hai mươi!</div>`;
   el.appendChild(o);
   say('Chà lòng bàn tay, mu bàn tay, kẽ ngón tay và đầu ngón tay. Xoa màn hình và đếm đến hai mươi nha!');
   let n=0, dist=0, last=null, lastTick=0, fin=false;
@@ -529,7 +693,7 @@ function wipeStage(st, el, done){
 
 function sortStage(st, el, done){
   const items = shuffle(st.items); let k=0, need=null, busy=false;
-  el.innerHTML=`<div class="sortcard block" id="sc"></div>
+  el.innerHTML=`<div class="duo"><div class="buddy">${buddy()}</div><div class="sortcard block" id="sc"></div></div>
     <div class="bins"><button class="bin L block press" data-a="L"><span class="big">${ic(st.left.i)}</span>${st.left.t}</button>
     <button class="bin R block press" data-a="R"><span class="big">${ic(st.right.i)}</span>${st.right.t}</button></div>`;
   const sc=el.querySelector('#sc'), bins=el.querySelectorAll('.bin');
@@ -542,12 +706,12 @@ function sortStage(st, el, done){
     if(busy) return;
     const it=items[k], ok=b.dataset.a===it.a;
     if(ok){
-      busy=true; sfx.good(); bins.forEach(x=>x.classList.remove('hint'));
+      busy=true; sfx.good(); react(el,'good'); bins.forEach(x=>x.classList.remove('hint'));
       sc.classList.add(it.a==='L'?'flyL':'flyR');
       const go=()=>{ k++; k<items.length ? showItem() : done(); };
       need ? say('Đúng rồi!', go) : say('Đúng rồi! '+it.why, go);
     } else if(!need){
-      sfx.oops(); run.miss++; need=it.a;
+      sfx.oops(); run.miss++; need=it.a; react(el,'oops');
       b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
       el.querySelector(`.bin[data-a="${it.a}"]`).classList.add('hint');
       say('Ồ, chưa đúng. '+it.why+' Chạm vào ô đang sáng nha.');
@@ -563,17 +727,17 @@ function quizStage(st, el, done){
     const R=rounds[r]; let opts, ans, wrong=0, busy=false;
     if(R.opts){ opts=shuffle(R.opts.map((o,j)=>({...o,k:'o'+j}))); ans='o0'; } else { opts=st.opts; ans=R.ans; }
     el.innerHTML=`${st.hearts?`<div class="hearts">${rounds.map((_,i)=>`<span class="emo ${i<r?'':'off'}">❤️</span>`).join('')}</div>`:''}
-      <div class="scene"><span class="who emo">${R.who}</span><span class="cue">${ic(R.cue)}</span></div>
+      <div class="scene">${R.who.includes(':')?`<span class="who">${charSvg(R.who)}</span>`:`<span class="who emo">${R.who}</span>`}<span class="cue">${ic(R.cue)}</span><span class="buddy">${buddy()}</span></div>
       <div class="opts">${opts.map(o=>`<button class="opt block press" data-k="${o.k}"><span class="big">${ic(o.i)}</span>${T(o.t)}</button>`).join('')}</div>`;
     say(R.q);
     el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
       if(busy) return;
       if(b.dataset.k===ans){
-        busy=true; sfx.good(); b.classList.remove('hint'); b.classList.add('yes');
+        busy=true; sfx.good(); react(el,'good'); b.classList.remove('hint'); b.classList.add('yes');
         const h=el.querySelectorAll('.hearts span')[r]; if(h) h.classList.remove('off');
         say(R.why, ()=>{ r++; r<rounds.length ? play() : done(); });
       } else {
-        sfx.oops(); run.miss++; wrong++; b.classList.add('no');
+        sfx.oops(); run.miss++; wrong++; react(el,'oops'); b.classList.add('no');
         say(wrong>=2 ? 'Gần đúng rồi! Thử ô đang sáng nha.' : 'Chưa đúng. Thử lại nha!');
         if(wrong>=2) el.querySelector(`.opt[data-k="${ans}"]`).classList.add('hint');
       }
@@ -593,7 +757,7 @@ function clearStage(st, el, done){
     if(left>0) say(it.say);
     else say(it.say, ()=>{
       const crib=el.querySelector('#crib');
-      crib.insertAdjacentHTML('beforeend','<span class="sleeper emo">👶</span><span class="zz">z z</span>');
+      crib.insertAdjacentHTML('beforeend',`<span class="sleeper">${svg(baby('sleep'),'0 0 160 160')}</span>`);
       sfx.win(); say(st.done, ()=>setTimeout(done,400));
     });
   });
