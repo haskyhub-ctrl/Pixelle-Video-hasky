@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tập Làm Chị</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;700;800&display=swap&subset=vietnamese">
+<style>
+/* Layout: one-screen playroom. Chunky outlined "toy block" tiles on a mint nursery wall; every game fits the viewport, big tap targets for a 4-year-old. */
+:root{
+  --wall:#CDEFE4; --wall-dot:#B6E3D5; --ink:#1E3A4C; --ink-soft:#4F6B7A; --paper:#FFFFFF; --paper-soft:#F4FBF8;
+  --coral:#FF7A66; --sun:#FFC845; --lilac:#B9A6F5; --sky:#8ED0F4; --pink:#FFB5C8; --mint:#93E0C3; --good:#22A86E; --oops:#E8604E;
+  --display:'Baloo 2','Nunito',ui-rounded,system-ui,sans-serif;
+  --body:'Nunito',ui-rounded,system-ui,sans-serif;
+  --r:22px; --edge:3px solid var(--ink); --lift:0 6px 0 var(--ink);
+  color-scheme:light;
+}
+html,body{height:100%}
+body{background:var(--wall);color:var(--ink);font-family:var(--body);font-size:18px;overflow:hidden;
+  background-image:radial-gradient(var(--wall-dot) 2.5px,transparent 3px);background-size:34px 34px}
+#app{height:100%;overflow-y:auto;padding-inline:16px;padding-block:12px 24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;max-width:1100px;margin:0 auto}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:focus-visible,input:focus-visible{outline:4px solid var(--coral);outline-offset:3px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.05}
+.emo{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;line-height:1}
+.ico{display:inline-grid;place-items:center}
+.ico svg{width:1em;height:1em}
+.block{background:var(--paper);border:var(--edge);border-radius:var(--r);box-shadow:var(--lift)}
+.press{transition:transform .08s, box-shadow .08s}
+.press:active{transform:translateY(5px);box-shadow:0 1px 0 var(--ink)}
+
+/* Home */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{flex:1 1 280px;min-width:0;display:flex;align-items:center;gap:12px}
+.brand .badge{font-size:46px;width:72px;height:72px;display:grid;place-items:center;background:var(--sun);border:var(--edge);border-radius:50%;box-shadow:var(--lift);flex:none}
+.brand h1{font-size:clamp(30px,6vw,52px);font-weight:800;letter-spacing:.5px}
+.brand p{margin:2px 0 0;color:var(--ink-soft);font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:var(--edge);border-radius:999px;background:var(--paper);font-weight:800;box-shadow:0 4px 0 var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media (max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.act{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 10px 12px;text-align:center;min-height:150px;background:var(--tint,var(--paper))}
+.act .big{font-size:clamp(48px,9vw,68px)}
+.act h3{font-size:clamp(18px,2.6vw,23px);font-weight:800}
+.stars{font-size:20px;letter-spacing:2px;color:var(--ink)}
+.stars .off{opacity:.22}
+.board{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.board h2{font-size:22px}
+.stickers{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+@media (max-width:600px){.stickers{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stk{aspect-ratio:1;max-width:100%;display:grid;place-items:center;font-size:clamp(26px,5vw,40px);border-radius:50%;border:3px dashed var(--ink-soft);background:var(--paper-soft)}
+.stk.on{border-style:solid;border-color:var(--ink);background:var(--sun);animation:pop .5s}
+.stk:not(.on) .emo{filter:grayscale(1);opacity:.25}
+
+/* Play screen */
+.bar{display:flex;align-items:center;gap:10px}
+.round{width:60px;height:60px;border-radius:50%;border:var(--edge);background:var(--paper);font-size:28px;display:grid;place-items:center;box-shadow:0 5px 0 var(--ink);flex:none}
+.dots{flex:1;display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.dots i{width:16px;height:16px;border-radius:50%;border:3px solid var(--ink);background:var(--paper)}
+.dots i.done{background:var(--good)} .dots i.now{background:var(--sun)}
+.bubble{position:relative;padding:14px 18px;font-size:clamp(19px,3vw,26px);font-weight:800;line-height:1.3;min-height:1.3em;display:flex;gap:12px;align-items:center}
+.bubble .who{font-size:38px;flex:none}
+.bubble p{margin:0;min-width:0}
+.stage{position:relative;flex:1;min-height:340px;display:flex;flex-direction:column;gap:14px}
+
+/* Sequence */
+.slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.slot{width:64px;height:64px;border-radius:16px;border:3px dashed var(--ink-soft);display:grid;place-items:center;font-size:36px;background:rgba(255,255,255,.5);position:relative}
+.slot b{font-family:var(--display);font-size:22px;color:var(--ink-soft)}
+.slot.fill{border-style:solid;border-color:var(--ink);background:var(--paper);animation:pop .4s}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;align-content:start}
+.card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 10px;font-weight:800;font-size:clamp(17px,2.4vw,21px);line-height:1.2;text-align:center}
+.card .big{font-size:58px}
+.shake{animation:shake .45s}
+.hint{animation:glow 1s infinite}
+.used{visibility:hidden}
+
+/* Overlay mini-games */
+.over{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:var(--paper-soft);border:var(--edge);border-radius:var(--r);touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
+.rubzone{font-size:clamp(110px,22vw,170px);animation:bob 2s ease-in-out infinite}
+.count{font-family:var(--display);font-size:64px;font-weight:800;line-height:1}
+.meter{width:min(420px,80%);height:24px;border:var(--edge);border-radius:999px;background:var(--paper);overflow:hidden}
+.meter span{display:block;height:100%;width:0;background:var(--sky);transition:width .2s}
+.fx{position:absolute;pointer-events:none;font-size:34px;animation:rise 1.1s ease-out forwards}
+.table{position:relative;width:min(560px,92%);aspect-ratio:16/9;max-width:100%;background:var(--sun);border:var(--edge);border-radius:28px;box-shadow:var(--lift)}
+.spot{position:absolute;width:16%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 40% 40%,#9B6B43,#6E4526);transform:translate(-50%,-50%);transition:opacity .15s}
+.hand-tip{font-weight:800;color:var(--ink-soft)}
+
+/* Sort */
+.sortcard{align-self:center;width:min(420px,100%);display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px;text-align:center;font-weight:800;font-size:clamp(20px,3vw,26px);line-height:1.25}
+.sortcard .big{font-size:84px}
+.sortcard.in{animation:pop .35s}
+.sortcard.flyL{animation:flyL .5s forwards}.sortcard.flyR{animation:flyR .5s forwards}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bin{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 8px;font-weight:800;font-size:clamp(17px,2.6vw,22px);line-height:1.2;text-align:center}
+.bin .big{font-size:52px}
+.bin.L{background:var(--mint)} .bin.R{background:var(--pink)}
+
+/* Quiz */
+.scene{display:flex;align-items:center;justify-content:center;gap:18px;padding:12px;flex-wrap:wrap}
+.scene .who{font-size:clamp(90px,16vw,130px);animation:bob 2.4s ease-in-out infinite}
+.scene .cue{font-size:clamp(46px,8vw,64px);background:var(--paper);border:var(--edge);border-radius:50%;width:1.6em;height:1.6em;display:grid;place-items:center;box-shadow:0 4px 0 var(--ink)}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.opts.six{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:520px){.opts{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.opt{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;font-weight:800;font-size:clamp(16px,2.4vw,20px);line-height:1.2;text-align:center}
+.opt .big{font-size:54px}
+.opt.no{opacity:.35;pointer-events:none}
+.opt.yes{background:var(--mint)}
+.hearts{display:flex;justify-content:center;gap:6px;font-size:30px}
+.hearts .off{filter:grayscale(1);opacity:.25}
+
+/* Crib */
+.crib{position:relative;align-self:center;width:min(560px,94%);aspect-ratio:16/10;max-width:100%;border:var(--edge);border-radius:20px;background:
+  repeating-linear-gradient(90deg,transparent 0 30px,var(--ink) 30px 36px),var(--paper);box-shadow:var(--lift)}
+.crib::after{content:"";position:absolute;left:6%;right:6%;bottom:8%;height:34%;background:var(--sky);border:var(--edge);border-radius:14px}
+.crib .it{position:absolute;z-index:2;transform:translate(-50%,-50%);font-size:clamp(56px,10vw,84px);background:none;border:0;padding:6px;transition:transform .5s,opacity .5s}
+.crib .it.gone{transform:translate(-50%,-260%) scale(.4);opacity:0;pointer-events:none}
+.crib .sleeper{position:absolute;z-index:2;left:50%;bottom:16%;font-size:clamp(56px,10vw,80px);transform:translateX(-50%);animation:pop .5s}
+.zz{position:absolute;z-index:2;left:62%;bottom:44%;font-family:var(--display);font-weight:800;font-size:30px;animation:rise 2s infinite}
+
+/* Intro & done */
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.hero{font-size:clamp(110px,24vw,180px);animation:bob 2.4s ease-in-out infinite}
+.center h2{font-size:clamp(34px,6vw,54px);font-weight:800}
+.go{padding:16px 40px;font-family:var(--display);font-size:30px;font-weight:800;background:var(--coral);color:var(--paper)}
+.go.alt{background:var(--paper);color:var(--ink)}
+.row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.bigstars{font-size:56px;letter-spacing:6px}
+.bigstars .off{opacity:.2}
+.medal{font-size:90px;width:150px;height:150px;border-radius:50%;display:grid;place-items:center;background:var(--sun);border:var(--edge);box-shadow:var(--lift);animation:pop .6s}
+.confetti{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+.confetti i{position:absolute;top:-20px;width:12px;height:18px;border-radius:3px;animation:fall 2.6s linear forwards}
+
+/* Parents */
+.parent{background:var(--paper);border:var(--edge);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:18px;font-size:17px;line-height:1.55}
+.parent section{max-width:70ch}
+.parent h2{font-size:28px}.parent h3{font-size:21px;margin-bottom:6px}
+.parent ul{margin:6px 0;padding-left:22px}.parent li{margin:4px 0}
+.parent a{color:var(--ink);font-weight:800}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.form label{display:flex;flex-direction:column;gap:4px;font-weight:800}
+.form input[type=text]{font:inherit;padding:10px 12px;border:var(--edge);border-radius:12px;background:var(--paper-soft);color:var(--ink)}
+.tog{flex-direction:row!important;align-items:center;gap:10px!important}
+.tog input{width:26px;height:26px;accent-color:var(--good)}
+.small{padding:10px 18px;font-weight:800;border:var(--edge);border-radius:999px;background:var(--paper);box-shadow:0 4px 0 var(--ink)}
+.small.warn{background:var(--pink)}
+.note{color:var(--ink-soft);font-size:15px}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;min-width:520px;width:100%}
+.tbl th,.tbl td{border-bottom:2px solid var(--wall);padding:8px;text-align:left;vertical-align:top}
+.tbl th{font-family:var(--display);font-size:18px}
+
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+@keyframes glow{50%{box-shadow:0 6px 0 var(--ink),0 0 0 8px var(--sun)}}
+@keyframes bob{50%{transform:translateY(-8px)}}
+@keyframes rise{from{transform:translate(-50%,-50%);opacity:1}to{transform:translate(-50%,-160%);opacity:0}}
+@keyframes flyL{to{transform:translate(-40%,120%) scale(.3);opacity:0}}
+@keyframes flyR{to{transform:translate(40%,120%) scale(.3);opacity:0}}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div id="app" aria-live="polite"></div>
+
+<script>
+/* ---------- Icons that emoji lack ---------- */
+const SVG = {
+  diaper:'<svg viewBox="0 0 64 64"><path d="M6 16h52l-4 13c-3 10-10 19-22 21C20 48 13 39 10 29z" fill="#fff" stroke="#5AAEE3" stroke-width="4" stroke-linejoin="round"/><rect x="3" y="12" width="13" height="9" rx="3" fill="#FFC845" stroke="#1E3A4C" stroke-width="2"/><rect x="48" y="12" width="13" height="9" rx="3" fill="#FFC845" stroke="#1E3A4C" stroke-width="2"/><path d="M22 30q10 6 20 0" fill="none" stroke="#B9A6F5" stroke-width="3" stroke-linecap="round"/></svg>',
+  diaperOpen:'<svg viewBox="0 0 64 64"><path d="M8 8h48v20c0 14-10 28-24 28S8 42 8 28z" fill="#fff" stroke="#5AAEE3" stroke-width="4" stroke-linejoin="round"/><circle cx="26" cy="34" r="4" fill="#B4874F"/><circle cx="36" cy="40" r="3" fill="#B4874F"/><circle cx="34" cy="28" r="2.5" fill="#B4874F"/></svg>',
+  mat:'<svg viewBox="0 0 64 64"><rect x="4" y="18" width="56" height="30" rx="8" fill="#93E0C3" stroke="#1E3A4C" stroke-width="3"/><circle cx="18" cy="33" r="4" fill="#fff"/><circle cx="32" cy="33" r="4" fill="#fff"/><circle cx="46" cy="33" r="4" fill="#fff"/></svg>',
+  pillow:'<svg viewBox="0 0 64 64"><path d="M8 18q24-10 48 0q6 14 0 28q-24 10-48 0q-6-14 0-28z" fill="#fff" stroke="#1E3A4C" stroke-width="3"/><path d="M20 32h24" stroke="#B9A6F5" stroke-width="3" stroke-linecap="round"/></svg>',
+  blanket:'<svg viewBox="0 0 64 64"><rect x="6" y="10" width="52" height="44" rx="6" fill="#FFB5C8" stroke="#1E3A4C" stroke-width="3"/><path d="M6 24h52M6 38h52M22 10v44M40 10v44" stroke="#fff" stroke-width="4"/></svg>',
+  towel:'<svg viewBox="0 0 64 64"><rect x="10" y="6" width="44" height="6" rx="3" fill="#1E3A4C"/><rect x="14" y="12" width="36" height="46" rx="4" fill="#8ED0F4" stroke="#1E3A4C" stroke-width="3"/><path d="M14 46h36" stroke="#fff" stroke-width="5"/></svg>',
+  wipes:'<svg viewBox="0 0 64 64"><rect x="6" y="20" width="52" height="32" rx="10" fill="#fff" stroke="#1E3A4C" stroke-width="3"/><rect x="20" y="16" width="24" height="12" rx="5" fill="#93E0C3" stroke="#1E3A4C" stroke-width="3"/><path d="M26 18q6-10 12 0" fill="#fff" stroke="#1E3A4C" stroke-width="2"/></svg>'
+};
+function ic(k){ return k.startsWith('svg:') ? `<span class="ico">${SVG[k.slice(4)]}</span>` : `<span class="emo">${k}</span>`; }
+
+/* ---------- Saved state ---------- */
+const DEF = {chi:'chị', em:'em bé', voice:true, stars:{}, seen:false};
+let S = Object.assign({}, DEF);
+try{ Object.assign(S, JSON.parse(localStorage.getItem('tapLamChi')||'{}')); }catch(e){}
+function save(){ try{ localStorage.setItem('tapLamChi', JSON.stringify(S)); }catch(e){} }
+const T = s => s.replace(/\{chi\}/g, (S.chi||'chị').trim()).replace(/\{em\}/g, (S.em||'em bé').trim());
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+/* ---------- Voice + sounds ---------- */
+let viVoice=null, lastSay='', sayToken=0;
+function pickVoice(){ try{ const vs=speechSynthesis.getVoices(); viVoice = vs.find(v=>/^vi/i.test(v.lang)) || null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+function say(text, onEnd){
+  text = cap(T(text)); lastSay = text;
+  const b = document.querySelector('#bubble p'); if(b) b.textContent = text;
+  const my = ++sayToken; let fired=false;
+  const fin = ()=>{ if(fired||my!==sayToken) return; fired=true; onEnd&&onEnd(); };
+  const est = Math.max(1600, text.length*75+600);
+  if(S.voice && window.speechSynthesis){
+    try{
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang='vi-VN'; if(viVoice) u.voice=viVoice; u.rate=.92; u.pitch=1.15;
+      u.onend=()=>setTimeout(fin,250); u.onerror=()=>setTimeout(fin,est);
+      speechSynthesis.speak(u);
+      setTimeout(fin, est+4000); // safety net if onend never fires
+      return;
+    }catch(e){}
+  }
+  setTimeout(fin, est);
+}
+function hush(){ sayToken++; try{ speechSynthesis.cancel(); }catch(e){} }
+let ac=null;
+function tone(seq){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    let t = ac.currentTime;
+    seq.forEach(([f,d])=>{ const o=ac.createOscillator(), g=ac.createGain(); o.type='triangle'; o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.22,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t+d+.02); t+=d*.8; });
+  }catch(e){}
+}
+const sfx = { good:()=>tone([[660,.14],[880,.22]]), oops:()=>tone([[300,.18],[240,.24]]), win:()=>tone([[523,.14],[659,.14],[784,.14],[1047,.4]]), tick:()=>tone([[900,.06]]) };
+const NUM=['','một','hai','ba','bốn','năm','sáu','bảy','tám','chín','mười','mười một','mười hai','mười ba','mười bốn','mười lăm','mười sáu','mười bảy','mười tám','mười chín','hai mươi'];
+
+/* ---------- Content ----------
+   Sources for the rules taught here are listed on the "Người lớn" screen. */
+const ACTS = [
+ {id:'tay', title:'Rửa tay thật sạch', icon:'🧼', tint:'var(--sky)', sticker:'🫧',
+  intro:'Trước khi chạm vào {em}, mình phải rửa tay thật sạch. Vì em còn bé xíu, rất dễ bị ốm. Cùng rửa tay nha!',
+  stages:[
+   {type:'seq', prompt:'Rửa tay có năm bước. Bước đầu tiên là gì nhỉ?', steps:[
+     {i:'🚰', t:'Làm ướt tay', say:'Mở vòi nước, làm ướt hai bàn tay.'},
+     {i:'🧼', t:'Lấy xà phòng', say:'Lấy xà phòng vào lòng bàn tay.'},
+     {i:'👐', t:'Chà thật kỹ', say:'Chà tay thật kỹ nào!', rub:true},
+     {i:'💦', t:'Xả sạch bọt', say:'Xả nước cho trôi hết bọt.'},
+     {i:'svg:towel', t:'Lau khô tay', say:'Lau khô bằng khăn sạch. Xong rồi!'}]},
+   {type:'sort', prompt:'Lúc nào cần rửa tay? Mình cùng xem nha.', left:{i:'🧼',t:'Cần rửa tay'}, right:{i:'👍',t:'Chưa cần'}, items:[
+     {i:'👶', t:'Trước khi chạm vào {em}', a:'L', why:'Luôn rửa tay trước khi chạm vào {em}.'},
+     {i:'🚽', t:'Sau khi đi vệ sinh', a:'L', why:'Đi vệ sinh xong là rửa tay ngay.'},
+     {i:'🐶', t:'Vừa chơi với cún, với mèo', a:'L', why:'Lông cún có nhiều vi khuẩn, phải rửa tay.'},
+     {i:'⚽', t:'Vừa chơi ngoài sân về', a:'L', why:'Chơi ngoài sân về, tay bẩn rồi, rửa tay thôi.'},
+     {i:'🍚', t:'Trước khi ăn cơm', a:'L', why:'Trước khi ăn mình rửa tay.'},
+     {i:'🎧', t:'Đang ngồi nghe mẹ kể chuyện', a:'R', why:'Đang nghe kể chuyện thì chưa cần rửa tay.'}]}
+  ]},
+ {id:'ta', title:'Thay tã cho búp bê', icon:'svg:diaper', tint:'var(--mint)', sticker:'🧷',
+  intro:'{chi} tập thay tã cho búp bê nha. Với {em} thật, {chi} làm trợ lý của mẹ: đưa tã, đưa khăn cho mẹ.',
+  stages:[
+   {type:'sort', prompt:'Thay tã cần những đồ gì?', left:{i:'✅',t:'Cần dùng'}, right:{i:'✋',t:'Không cần'}, items:[
+     {i:'svg:diaper', t:'Tã sạch', a:'L', why:'Tã sạch để mặc cho em.'},
+     {i:'svg:wipes', t:'Khăn ướt', a:'L', why:'Khăn ướt để lau mông cho em.'},
+     {i:'🧴', t:'Kem chống hăm', a:'L', why:'Kem chống hăm giúp mông em không bị đỏ.'},
+     {i:'svg:mat', t:'Tấm lót thay tã', a:'L', why:'Tấm lót để em nằm cho sạch.'},
+     {i:'✂️', t:'Cái kéo', a:'R', why:'Kéo sắc lắm, không mang lại gần em.'},
+     {i:'🍬', t:'Viên kẹo', a:'R', why:'Kẹo không dùng để thay tã. Em bé cũng không được ăn kẹo.'}]},
+   {type:'seq', prompt:'Thay tã cho búp bê. Bước đầu tiên là gì?', steps:[
+     {i:'🧼', k:'wash', t:'Rửa tay', say:'Rửa tay sạch trước đã.'},
+     {i:'svg:mat', t:'Trải tấm lót', say:'Trải tấm lót, đặt búp bê nằm lên.'},
+     {i:'svg:diaperOpen', t:'Mở tã bẩn', say:'Mở tã cũ ra.'},
+     {i:'svg:wipes', t:'Lau từ trước ra sau', say:'Lau nhẹ nhàng bằng khăn ướt, từ trước ra sau.'},
+     {i:'svg:diaper', t:'Mặc tã mới', say:'Mặc tã mới, dán hai bên lại.'},
+     {i:'🗑️', t:'Bỏ tã bẩn vào thùng rác', say:'Cuộn tã bẩn lại, bỏ vào thùng rác.'},
+     {i:'🧼', k:'wash', t:'Rửa tay lần nữa', say:'Rửa tay lần nữa. Búp bê thơm tho rồi!'}]},
+   {type:'quiz', rounds:[
+     {who:'👩‍🍼', cue:'svg:diaper', q:'Mẹ đang thay tã cho {em}. {chi} giúp mẹ thế nào?',
+      opts:[{i:'svg:diaper',t:'Đưa tã sạch cho mẹ'},{i:'🙌',t:'Tự bế em lên'},{i:'🧗',t:'Trèo lên bàn thay tã'}],
+      why:'Đúng rồi! {chi} đưa đồ cho mẹ. Chỉ người lớn mới bế em và đặt em lên bàn thay tã.'}]}
+  ]},
+ {id:'nhe', title:'Chạm nhẹ, thương em', icon:'🤲', tint:'var(--pink)', sticker:'💗',
+  intro:'{em} còn bé xíu và mềm lắm. Mình cùng xem việc nào được làm với em, việc nào không được nha.',
+  stages:[
+   {type:'sort', prompt:'Việc này được làm hay không được?', left:{i:'✅',t:'Được làm'}, right:{i:'✋',t:'Không được'}, items:[
+     {i:'🤲', t:'Vuốt nhẹ tay chân em bằng cả lòng bàn tay', a:'L', why:'Vuốt nhẹ bằng cả lòng bàn tay, em thích lắm.'},
+     {i:'👆', t:'Chọc vào mắt, vào đầu em', a:'R', why:'Mắt và đỉnh đầu em còn rất mềm. Mình không chạm vào nha.'},
+     {i:'🎵', t:'Hát cho em nghe thật nhỏ nhẹ', a:'L', why:'Em thích nghe giọng của {chi} lắm.'},
+     {i:'📢', t:'Hét thật to bên tai em', a:'R', why:'Tai em nhỏ xíu. Mình nói nhỏ thôi.'},
+     {i:'🙌', t:'Tự bế em khi không có người lớn', a:'R', why:'Muốn bế em, {chi} ngồi lên ghế, nhờ bố mẹ đặt em vào lòng.'},
+     {i:'🛋️', t:'Ngồi trên ghế, nhờ mẹ đặt em vào lòng', a:'L', why:'Đúng cách rồi! Ngồi yên, tay đỡ đầu em, có mẹ ở bên cạnh.'},
+     {i:'🍬', t:'Cho em ăn kẹo, ăn bánh', a:'R', why:'Em bé chỉ uống sữa thôi. Kẹo bánh làm em bị hóc.'},
+     {i:'🔵', t:'Đưa viên bi nhỏ cho em chơi', a:'R', why:'Đồ nhỏ em bỏ vào miệng sẽ bị hóc. Rất nguy hiểm.'},
+     {i:'📖', t:'Cho em xem sách tranh', a:'L', why:'Em thích nhìn tranh có màu đen trắng và màu đậm.'},
+     {i:'🤧', t:'Đang ho, sổ mũi vẫn hôn mặt em', a:'R', why:'Khi bị ốm, {chi} đeo khẩu trang và đứng xa em một chút. Em rất dễ bị lây ốm.'},
+     {i:'🦶', t:'Rửa tay rồi hôn nhẹ bàn chân em', a:'L', why:'Hôn bàn chân nhỏ xinh, em vui lắm.'}]}
+  ]},
+ {id:'khoc', title:'Vì sao em khóc?', icon:'😭', tint:'var(--sun)', sticker:'🔍',
+  intro:'Em bé chưa biết nói. Em khóc để nói cho mình biết em cần gì. {chi} làm thám tử, đoán xem em cần gì nha!',
+  stages:[
+   {type:'quiz', rounds:[
+     {who:'👶', cue:'👅', q:'Em mút tay, quay đầu tìm, miệng chóp chép. Em cần gì?',
+      opts:[{i:'🍼',t:'Em đói'},{i:'😴',t:'Em buồn ngủ'},{i:'🎈',t:'Em muốn chơi bóng'}], why:'Em đói rồi! {chi} gọi mẹ cho em bú nha.'},
+     {who:'👶', cue:'🥱', q:'Em dụi mắt, ngáp thật to. Em cần gì?',
+      opts:[{i:'😴',t:'Em buồn ngủ'},{i:'🍼',t:'Em đói'},{i:'🛁',t:'Em muốn tắm'}], why:'Em buồn ngủ. {chi} hát ru thật khẽ, nói nhỏ thôi nha.'},
+     {who:'👶', cue:'svg:diaperOpen', q:'Em khóc, tã căng phồng, có mùi. Em cần gì?',
+      opts:[{i:'svg:diaper',t:'Thay tã mới'},{i:'🎵',t:'Nghe hát'},{i:'🍪',t:'Ăn bánh'}], why:'Tã bẩn rồi. {chi} báo mẹ và lấy giúp mẹ một chiếc tã mới.'},
+     {who:'👶', cue:'🙌', q:'Em giơ tay, khóc khi nằm một mình. Em cần gì?',
+      opts:[{i:'🤗',t:'Được ôm, được ở gần'},{i:'svg:diaper',t:'Thay tã'},{i:'📺',t:'Xem ti vi'}], why:'Em muốn được ôm. {chi} gọi mẹ, rồi ngồi cạnh nói chuyện với em.'},
+     {who:'👶', cue:'🌡️', q:'Người em nóng hầm hập. {chi} làm gì?',
+      opts:[{i:'👨‍👩‍👧',t:'Gọi bố mẹ ngay'},{i:'svg:blanket',t:'Đắp thêm chăn'},{i:'🍦',t:'Cho em ăn kem'}], why:'Đúng rồi! Em bị nóng là phải gọi bố mẹ ngay.'},
+     {who:'👶', cue:'😫', q:'Em khóc mãi, mãi không nín. {chi} làm gì?',
+      opts:[{i:'👨‍👩‍👧',t:'Gọi bố mẹ'},{i:'🫨',t:'Lắc em thật mạnh'},{i:'🚪',t:'Đóng cửa đi chỗ khác'}], why:'Gọi bố mẹ là giỏi nhất. Không bao giờ được lắc em bé nha.'}]}
+  ]},
+ {id:'ngu', title:'Giường ngủ an toàn', icon:'🛏️', tint:'var(--lilac)', sticker:'🌙',
+  intro:'Em bé ngủ an toàn nhất khi nằm ngửa, nằm một mình, trong cũi trống trơn. Mình dọn cũi cho {em} nha!',
+  stages:[
+   {type:'clear', prompt:'Chạm vào từng món đồ để lấy ra khỏi cũi.', done:'Cũi trống trơn rồi! {em} nằm ngửa ngủ ngon.', items:[
+     {i:'🧸', x:22, y:38, say:'Lấy gấu bông ra. Gấu bông có thể che mặt em.'},
+     {i:'svg:pillow', x:50, y:30, say:'Lấy gối ra. Em bé chưa cần gối.'},
+     {i:'svg:blanket', x:77, y:40, say:'Lấy chăn dày ra. Chăn dày có thể trùm lên mặt em.'},
+     {i:'🧩', x:40, y:62, say:'Lấy đồ chơi ra. Trong cũi chỉ có em thôi.'}]},
+   {type:'quiz', rounds:[
+     {who:'🛏️', cue:'👶', q:'Em bé nằm ngủ thế nào là đúng?',
+      opts:[{i:'⬆️',t:'Nằm ngửa, mặt nhìn lên'},{i:'⬇️',t:'Nằm sấp, úp mặt xuống'},{i:'🛋️',t:'Ngủ trên ghế sô pha'}], why:'Đúng rồi! Em nằm ngửa để thở dễ dàng.'},
+     {who:'😴', cue:'🤫', q:'{em} đang ngủ. {chi} chơi thế nào?',
+      opts:[{i:'🤫',t:'Chơi nhẹ nhàng, nói nhỏ'},{i:'🥁',t:'Đánh trống thật to'},{i:'🧗',t:'Trèo vào cũi chơi với em'}], why:'Giỏi quá! Chơi nhẹ nhàng để em ngủ ngon.'}]}
+  ]},
+ {id:'me', title:'Thương mẹ', icon:'🤱', tint:'var(--coral)', sticker:'🌷',
+  intro:'Sau khi sinh em, mẹ rất mệt. Mẹ cần nghỉ ngơi, uống nhiều nước và được ôm thật nhiều. {chi} chăm mẹ nha!',
+  stages:[
+   {type:'quiz', hearts:true, opts:[
+      {k:'water',i:'🥛',t:'Cốc nước'},{k:'pillow',i:'svg:pillow',t:'Cái gối'},{k:'book',i:'📚',t:'Quyển sách'},
+      {k:'fruit',i:'🍌',t:'Quả chuối'},{k:'blanket',i:'svg:blanket',t:'Cái chăn'},{k:'hug',i:'🤗',t:'Cái ôm'}],
+    rounds:[
+     {who:'🤱', cue:'💧', q:'Mẹ đang cho em bú. Mẹ khát nước quá!', ans:'water', why:'{chi} mang nước cho mẹ. Mẹ cho em bú nên cần uống nhiều nước lắm.'},
+     {who:'🤱', cue:'😣', q:'Mẹ ngồi lâu, mỏi lưng quá.', ans:'pillow', why:'{chi} kê gối cho mẹ. Lưng mẹ đỡ mỏi rồi.'},
+     {who:'🤱', cue:'👧', q:'Mẹ cho em bú. {chi} muốn ngồi cạnh mẹ.', ans:'book', why:'{chi} ngồi cạnh mẹ cùng xem sách. Mẹ vui lắm!'},
+     {who:'👩', cue:'😋', q:'Mẹ đói bụng rồi.', ans:'fruit', why:'Mang chuối cho mẹ. Mẹ ăn no để có sức chăm em.'},
+     {who:'🛌', cue:'💤', q:'Mẹ buồn ngủ, mẹ muốn nằm nghỉ.', ans:'blanket', why:'{chi} đắp chăn cho mẹ, rồi chơi thật yên lặng.'},
+     {who:'👩', cue:'🥺', q:'Mẹ thấy mệt và hơi buồn.', ans:'hug', why:'Một cái ôm thật chặt! Mẹ thương {chi} nhiều lắm, như ngày xưa vậy.'}]}
+  ]},
+ {id:'don', title:'Dọn nhà gọn gàng', icon:'🧺', tint:'var(--mint)', sticker:'✨',
+  intro:'Nhà có em bé thì sàn nhà phải thật gọn. Đồ nhỏ em có thể nuốt, nên mình cất lên cao. Cùng dọn nhà nha!',
+  stages:[
+   {type:'sort', prompt:'Đồ này cất ở đâu? Đồ to vào thùng đồ chơi. Đồ nhỏ cất lên cao, xa tay em.', left:{i:'🧺',t:'Thùng đồ chơi'}, right:{i:'🔝',t:'Cất lên cao'}, items:[
+     {i:'🧸', t:'Gấu bông', a:'L', why:'Gấu bông to, cất vào thùng đồ chơi.'},
+     {i:'⚽', t:'Quả bóng', a:'L', why:'Quả bóng to, cất vào thùng.'},
+     {i:'📚', t:'Sách tranh', a:'L', why:'Sách cất vào thùng, gọn gàng.'},
+     {i:'🔵', t:'Viên bi', a:'R', why:'Viên bi nhỏ, em nuốt sẽ bị hóc. Cất lên cao.'},
+     {i:'🧱', t:'Mảnh ghép nhỏ', a:'R', why:'Mảnh ghép nhỏ lọt vừa miệng em. Cất lên cao.'},
+     {i:'🪙', t:'Đồng xu', a:'R', why:'Đồng xu nhỏ, rất nguy hiểm với em. Cất lên cao.'},
+     {i:'🔋', t:'Viên pin', a:'R', why:'Pin rất nguy hiểm. Đưa cho bố mẹ cất ngay.'},
+     {i:'🎈', t:'Bóng bay xẹp', a:'R', why:'Bóng bay xẹp làm em bị hóc. Đưa cho bố mẹ cất.'}]},
+   {type:'wipe', prompt:'Lau bàn thật sạch! Dùng ngón tay chà lên các vết bẩn.', done:'Bàn sạch bong rồi!'},
+   {type:'quiz', rounds:[
+     {who:'👕', cue:'svg:diaperOpen', q:'Quần áo của {em} bị bẩn. Bỏ vào đâu?',
+      opts:[{i:'🧺',t:'Giỏ đồ bẩn'},{i:'🛏️',t:'Trên giường'},{i:'🗄️',t:'Tủ quần áo sạch'}], why:'Giỏ đồ bẩn! Để mẹ giặt cho em.'}]}
+  ]},
+ {id:'lay', title:'Mẹ cần gì nhỉ?', icon:'👂', tint:'var(--sky)', sticker:'🏅',
+  intro:'Mẹ đang bế {em} nên không có tay rảnh. {chi} nghe thật kỹ rồi mang giúp mẹ nha!',
+  stages:[
+   {type:'quiz', n:5, opts:[
+      {k:'diaper',i:'svg:diaper',t:'Tã'},{k:'wipes',i:'svg:wipes',t:'Khăn ướt'},{k:'towel',i:'svg:towel',t:'Khăn tắm'},
+      {k:'shirt',i:'👕',t:'Áo của em'},{k:'socks',i:'🧦',t:'Đôi tất'},{k:'hat',i:'🧢',t:'Cái mũ'}],
+    rounds:[
+     {who:'👩‍🍼', cue:'❓', q:'Mẹ cần một chiếc tã.', ans:'diaper', why:'Đây là tã. Cảm ơn trợ lý nhỏ!'},
+     {who:'👩‍🍼', cue:'❓', q:'Mẹ cần khăn ướt.', ans:'wipes', why:'Khăn ướt đây ạ!'},
+     {who:'👩‍🍼', cue:'❓', q:'Em tắm xong rồi. Mẹ cần khăn tắm.', ans:'towel', why:'Khăn tắm để lau khô người cho em.'},
+     {who:'👩‍🍼', cue:'❓', q:'Mẹ cần áo cho em mặc.', ans:'shirt', why:'Áo của em đây ạ!'},
+     {who:'👩‍🍼', cue:'❓', q:'Chân em lạnh. Mẹ cần đôi tất.', ans:'socks', why:'Đi tất cho em ấm chân.'},
+     {who:'👩‍🍼', cue:'❓', q:'Ra ngoài trời nắng. Mẹ cần cái mũ.', ans:'hat', why:'Đội mũ cho em đỡ nắng.'}]}
+  ]}
+];
+
+/* ---------- Screens ---------- */
+const app = document.getElementById('app');
+let run = null;
+const starsHtml = (n,cls='stars') => `<span class="${cls}" aria-label="${n} sao">${[1,2,3].map(i=>`<span class="${i<=n?'':'off'}">★</span>`).join('')}</span>`;
+
+function home(speak){
+  hush(); run=null;
+  const got = ACTS.filter(a=>S.stars[a.id]).length;
+  app.innerHTML = `
+  <div class="top">
+    <div class="brand"><div class="badge emo">👧</div><div><h1>Tập Làm Chị</h1><p>Chọn một trò chơi nha!</p></div></div>
+    <span class="chip"><span class="emo">⭐</span> ${got}/${ACTS.length} huy hiệu</span>
+    <button class="small press" id="toParent">Người lớn</button>
+  </div>
+  <div class="grid">${ACTS.map((a,i)=>`
+    <button class="act block press" data-i="${i}" style="--tint:${a.tint}">
+      <span class="big">${ic(a.icon)}</span><h3>${a.title}</h3>${starsHtml(S.stars[a.id]||0)}
+    </button>`).join('')}</div>
+  <div class="board block"><h2>Bảng huy hiệu của ${esc(T('{chi}'))}</h2>
+    <div class="stickers">${ACTS.map(a=>`<div class="stk ${S.stars[a.id]?'on':''}" title="${a.title}">${ic(a.sticker)}</div>`).join('')}</div>
+  </div>`;
+  app.querySelectorAll('.act').forEach(b=>b.onclick=()=>intro(ACTS[+b.dataset.i]));
+  document.getElementById('toParent').onclick=parent;
+  if(speak) say(got===ACTS.length ? 'Wow! {chi} có đủ tất cả huy hiệu rồi. {chi} đã sẵn sàng làm chị!' : 'Chào {chi}! Chọn một trò chơi nha.');
+}
+
+function shell(act){
+  app.innerHTML = `
+  <div class="bar">
+    <button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button>
+    <div class="dots">${act.stages.map(()=>'<i></i>').join('')}</div>
+    <button class="round press" id="again" aria-label="Nghe lại"><span class="emo">🔊</span></button>
+  </div>
+  <div class="bubble block"><span class="who emo">👩</span><p></p></div>
+  <div class="stage" id="stage"></div>`;
+  document.getElementById('goHome').onclick=()=>home(true);
+  document.getElementById('again').onclick=()=>say(lastSay);
+}
+
+function intro(act){
+  hush();
+  run = {act, idx:0, miss:0};
+  app.innerHTML = `
+  <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button><div class="dots"></div>
+  <button class="round press" id="again" aria-label="Nghe lại"><span class="emo">🔊</span></button></div>
+  <div class="center">
+    <div class="hero">${ic(act.icon)}</div>
+    <h2>${act.title}</h2>
+    <div class="bubble block" id="bubble"><span class="who emo">👩</span><p></p></div>
+    <button class="go block press" id="start">Bắt đầu</button>
+  </div>`;
+  document.getElementById('goHome').onclick=()=>home(true);
+  document.getElementById('again').onclick=()=>say(lastSay);
+  document.getElementById('start').onclick=()=>{ shell(act); stage(); };
+  say(act.intro);
+}
+
+function stage(){
+  const {act, idx} = run;
+  app.querySelectorAll('.dots i').forEach((d,i)=>d.className = i<idx?'done':(i===idx?'now':''));
+  app.querySelector('.bubble').id='bubble';
+  const st = act.stages[idx], el = document.getElementById('stage');
+  el.innerHTML='';
+  const me = run;
+  const next = ()=>{ if(run!==me) return; run.idx++; run.idx < act.stages.length ? stage() : finish(); };
+  ({seq:seqStage, sort:sortStage, quiz:quizStage, clear:clearStage, wipe:wipeStage})[st.type](st, el, next);
+}
+
+function finish(){
+  const {act, miss} = run;
+  const n = miss<=1 ? 3 : miss<=4 ? 2 : 1;
+  const first = !S.stars[act.id];
+  S.stars[act.id] = Math.max(S.stars[act.id]||0, n); save();
+  sfx.win(); confetti();
+  app.innerHTML = `
+  <div class="center">
+    <div class="medal">${ic(act.sticker)}</div>
+    <h2>Giỏi quá!</h2>
+    ${starsHtml(n,'bigstars')}
+    <div class="bubble block" id="bubble"><span class="who emo">👩</span><p></p></div>
+    <div class="row"><button class="go block press" id="more">Chơi trò khác</button><button class="go alt block press" id="redo">Chơi lại</button></div>
+  </div>`;
+  document.getElementById('more').onclick=()=>home(true);
+  document.getElementById('redo').onclick=()=>intro(act);
+  say((first?'{chi} nhận được huy hiệu mới! ':'')+'Giỏi lắm! Mẹ tự hào về {chi}!');
+}
+
+function confetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const box=document.createElement('div'); box.className='confetti';
+  const cols=['var(--coral)','var(--sun)','var(--lilac)','var(--sky)','var(--mint)','var(--pink)'];
+  for(let i=0;i<60;i++){ const c=document.createElement('i'); c.style.left=Math.random()*100+'%'; c.style.background=cols[i%cols.length]; c.style.animationDelay=(Math.random()*.8)+'s'; c.style.animationDuration=(2+Math.random()*1.5)+'s'; box.appendChild(c); }
+  document.body.appendChild(box); setTimeout(()=>box.remove(),4200);
+}
+
+/* ---------- Game engines ---------- */
+function seqStage(st, el, done){
+  const steps = st.steps.map((s,i)=>({...s, k:s.k||('s'+i)}));
+  let cur=0, wrong=0, busy=false;
+  el.innerHTML = `<div class="slots">${steps.map((s,i)=>`<div class="slot"><b>${i+1}</b></div>`).join('')}</div>
+    <div class="cards">${shuffle(steps).map(s=>`<button class="card block press" data-k="${s.k}"><span class="big">${ic(s.i)}</span>${s.t}</button>`).join('')}</div>`;
+  const slots = el.querySelectorAll('.slot');
+  say(st.prompt);
+  el.querySelectorAll('.card').forEach(c=>c.onclick=()=>{
+    if(busy) return;
+    const step = steps[cur];
+    if(c.dataset.k === step.k){
+      sfx.good(); wrong=0;
+      el.querySelectorAll('.hint').forEach(h=>h.classList.remove('hint'));
+      c.classList.add('used');
+      slots[cur].innerHTML = ic(step.i); slots[cur].classList.add('fill');
+      cur++;
+      const after = ()=>{ busy=false; if(cur===steps.length){ busy=true; setTimeout(done,500); } };
+      busy=true;
+      if(step.rub) say(step.say, ()=>rubGame(el, after));
+      else say(step.say, after);
+    } else {
+      sfx.oops(); run.miss++; wrong++;
+      c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+      say(wrong>=2 ? 'Bước tiếp theo là: '+step.t+'. Tìm thẻ đang sáng nha!' : 'Chưa phải bước này. Thử thẻ khác nha!');
+      if(wrong>=2) el.querySelector(`.card[data-k="${step.k}"]:not(.used)`)?.classList.add('hint');
+    }
+  });
+}
+
+function rubGame(el, cb){
+  const o=document.createElement('div'); o.className='over';
+  o.innerHTML=`<div class="rubzone emo">👐</div><div class="count">0</div><div class="meter"><span></span></div><div class="hand-tip">Xoa ngón tay qua lại trên màn hình. Đếm đến hai mươi!</div>`;
+  el.appendChild(o);
+  say('Chà lòng bàn tay, mu bàn tay, kẽ ngón tay và đầu ngón tay. Xoa màn hình và đếm đến hai mươi nha!');
+  let n=0, dist=0, last=null, lastTick=0, fin=false;
+  const cnt=o.querySelector('.count'), bar=o.querySelector('.meter span');
+  const move=e=>{
+    if(fin) return;
+    if(e.pointerType==='mouse' && !e.buttons){ last=null; return; }
+    const r=o.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+    if(last) dist+=Math.hypot(x-last.x,y-last.y);
+    last={x,y};
+    if(Math.random()<.18){ const b=document.createElement('span'); b.className='fx emo'; b.textContent='🫧'; b.style.left=x+'px'; b.style.top=y+'px'; o.appendChild(b); setTimeout(()=>b.remove(),1100); }
+    const now=performance.now();
+    if(dist>120 && now-lastTick>550){
+      dist=0; lastTick=now; n++; cnt.textContent=n; bar.style.width=(n*5)+'%';
+      if(n<20){ say(NUM[n]); }
+      else { fin=true; sfx.good(); say('Hai mươi! Tay sạch bong rồi!', ()=>{ o.remove(); cb(); }); }
+    }
+  };
+  o.addEventListener('pointerdown',e=>{ last=null; try{o.setPointerCapture(e.pointerId);}catch(_){} move(e); });
+  o.addEventListener('pointermove',move);
+  o.addEventListener('pointerup',()=>last=null);
+}
+
+function wipeStage(st, el, done){
+  el.innerHTML=`<div class="over" style="position:relative;flex:1"><div class="table" id="tbl"></div><div class="hand-tip">Chà ngón tay lên vết bẩn</div></div>`;
+  const tbl=el.querySelector('#tbl'), zone=el.querySelector('.over');
+  const spots=[[18,30],[48,24],[78,34],[30,70],[62,68],[86,74]].map(([x,y])=>{
+    const s=document.createElement('div'); s.className='spot'; s.style.left=x+'%'; s.style.top=y+'%'; s._d=1; tbl.appendChild(s); return s; });
+  say(st.prompt);
+  let fin=false;
+  const move=e=>{
+    if(fin || (e.pointerType==='mouse' && !e.buttons)) return;
+    spots.forEach(s=>{ if(s._d<=0) return; const r=s.getBoundingClientRect();
+      if(Math.hypot(e.clientX-(r.left+r.width/2), e.clientY-(r.top+r.height/2)) < r.width*.75){
+        s._d-=.06; s.style.opacity=Math.max(0,s._d);
+        if(s._d<=0){ sfx.tick(); const f=document.createElement('span'); f.className='fx emo'; f.textContent='✨'; f.style.left=s.style.left; f.style.top=s.style.top; tbl.appendChild(f); setTimeout(()=>f.remove(),1100); }
+      }});
+    if(spots.every(s=>s._d<=0)){ fin=true; sfx.good(); say(st.done, ()=>setTimeout(done,300)); }
+  };
+  zone.addEventListener('pointerdown',e=>{ try{zone.setPointerCapture(e.pointerId);}catch(_){} move(e); });
+  zone.addEventListener('pointermove',move);
+}
+
+function sortStage(st, el, done){
+  const items = shuffle(st.items); let k=0, need=null, busy=false;
+  el.innerHTML=`<div class="sortcard block" id="sc"></div>
+    <div class="bins"><button class="bin L block press" data-a="L"><span class="big">${ic(st.left.i)}</span>${st.left.t}</button>
+    <button class="bin R block press" data-a="R"><span class="big">${ic(st.right.i)}</span>${st.right.t}</button></div>`;
+  const sc=el.querySelector('#sc'), bins=el.querySelectorAll('.bin');
+  const showItem=(lead)=>{
+    const it=items[k]; need=null; busy=false;
+    sc.className='sortcard block in'; sc.innerHTML=`<span class="big">${ic(it.i)}</span>${T(it.t)}`;
+    say((lead?lead+' ':'')+it.t);
+  };
+  bins.forEach(b=>b.onclick=()=>{
+    if(busy) return;
+    const it=items[k], ok=b.dataset.a===it.a;
+    if(ok){
+      busy=true; sfx.good(); bins.forEach(x=>x.classList.remove('hint'));
+      sc.classList.add(it.a==='L'?'flyL':'flyR');
+      const go=()=>{ k++; k<items.length ? showItem() : done(); };
+      need ? say('Đúng rồi!', go) : say('Đúng rồi! '+it.why, go);
+    } else if(!need){
+      sfx.oops(); run.miss++; need=it.a;
+      b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+      el.querySelector(`.bin[data-a="${it.a}"]`).classList.add('hint');
+      say('Ồ, chưa đúng. '+it.why+' Chạm vào ô đang sáng nha.');
+    }
+  });
+  showItem(st.prompt);
+}
+
+function quizStage(st, el, done){
+  const rounds = st.n ? shuffle(st.rounds).slice(0,st.n) : st.rounds;
+  let r=0;
+  const play=()=>{
+    const R=rounds[r]; let opts, ans, wrong=0, busy=false;
+    if(R.opts){ opts=shuffle(R.opts.map((o,j)=>({...o,k:'o'+j}))); ans='o0'; } else { opts=st.opts; ans=R.ans; }
+    el.innerHTML=`${st.hearts?`<div class="hearts">${rounds.map((_,i)=>`<span class="emo ${i<r?'':'off'}">❤️</span>`).join('')}</div>`:''}
+      <div class="scene"><span class="who emo">${R.who}</span><span class="cue">${ic(R.cue)}</span></div>
+      <div class="opts">${opts.map(o=>`<button class="opt block press" data-k="${o.k}"><span class="big">${ic(o.i)}</span>${T(o.t)}</button>`).join('')}</div>`;
+    say(R.q);
+    el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(busy) return;
+      if(b.dataset.k===ans){
+        busy=true; sfx.good(); b.classList.remove('hint'); b.classList.add('yes');
+        const h=el.querySelectorAll('.hearts span')[r]; if(h) h.classList.remove('off');
+        say(R.why, ()=>{ r++; r<rounds.length ? play() : done(); });
+      } else {
+        sfx.oops(); run.miss++; wrong++; b.classList.add('no');
+        say(wrong>=2 ? 'Gần đúng rồi! Thử ô đang sáng nha.' : 'Chưa đúng. Thử lại nha!');
+        if(wrong>=2) el.querySelector(`.opt[data-k="${ans}"]`).classList.add('hint');
+      }
+    });
+  };
+  play();
+}
+
+function clearStage(st, el, done){
+  el.innerHTML=`<div class="crib" id="crib">${st.items.map((it,i)=>`<button class="it" data-i="${i}" style="left:${it.x}%;top:${it.y}%" aria-label="Lấy ra">${ic(it.i)}</button>`).join('')}</div>`;
+  say(st.prompt);
+  let left=st.items.length;
+  el.querySelectorAll('.it').forEach(b=>b.onclick=()=>{
+    if(b.classList.contains('gone')) return;
+    b.classList.add('gone'); sfx.good(); left--;
+    const it=st.items[+b.dataset.i];
+    if(left>0) say(it.say);
+    else say(it.say, ()=>{
+      const crib=el.querySelector('#crib');
+      crib.insertAdjacentHTML('beforeend','<span class="sleeper emo">👶</span><span class="zz">z z</span>');
+      sfx.win(); say(st.done, ()=>setTimeout(done,400));
+    });
+  });
+}
+
+/* ---------- Parents ---------- */
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function parent(){
+  hush(); pickVoice();
+  app.innerHTML = `
+  <div class="bar"><button class="round press" id="goHome" aria-label="Về màn hình chính"><span class="emo">🏠</span></button><h2 style="flex:1">Dành cho bố mẹ</h2></div>
+  <div class="parent">
+    <section>
+      <h3>Cài đặt</h3>
+      <div class="form">
+        <label>Bé được gọi là<input type="text" id="fChi" value="${esc(S.chi)}" placeholder="vd: chị Na"></label>
+        <label>Em bé được gọi là<input type="text" id="fEm" value="${esc(S.em)}" placeholder="vd: em Bin"></label>
+        <label class="tog"><input type="checkbox" id="fVoice" ${S.voice?'checked':''}> Đọc to lời hướng dẫn</label>
+      </div>
+      <p class="note" id="vStat">${viVoice?'Đã tìm thấy giọng đọc tiếng Việt: '+esc(viVoice.name)+'.':'Chưa thấy giọng đọc tiếng Việt trên máy này. Android: cài "Dịch vụ chuyển văn bản thành giọng nói của Google" và tải gói tiếng Việt. iPad/iPhone: Cài đặt → Trợ năng → Nội dung được đọc → Giọng nói → Tiếng Việt (Linh). Không có giọng đọc thì bố mẹ đọc chữ trong bong bóng cho con nghe.'}</p>
+      <div class="row" style="justify-content:flex-start"><button class="small press" id="test">Nghe thử giọng</button><button class="small warn press" id="reset">Xóa huy hiệu, chơi lại từ đầu</button></div>
+    </section>
+    <section>
+      <h3>Trò chơi dạy gì</h3>
+      <p>8 trò chơi ngắn (3–5 phút mỗi trò), lấy ý tưởng từ các lớp "Big Sibling / Sibling Preparation" ở bệnh viện Mỹ (bé tập thay tã và bế búp bê, học em bé cần gì, cách giúp ở nhà), hướng dẫn của Viện Nhi khoa Hoa Kỳ (AAP) về giấc ngủ an toàn và chuẩn bị cho anh chị, khuyến cáo rửa tay của CDC/WHO, và nhóm kỹ năng "practical life" của Montessori cho trẻ 3–6 tuổi.</p>
+      <div class="tbl"><table>
+        <tr><th>Trò chơi</th><th>Kỹ năng</th><th>Cơ sở</th></tr>
+        <tr><td>Rửa tay thật sạch</td><td>5 bước rửa tay, chà đủ 20 giây; khi nào cần rửa tay</td><td>CDC: chà ít nhất 20 giây; trẻ sơ sinh dễ nhiễm bệnh</td></tr>
+        <tr><td>Thay tã cho búp bê</td><td>Đồ dùng thay tã, thứ tự các bước, lau từ trước ra sau; với em thật bé chỉ làm trợ lý</td><td>Lớp chuẩn bị làm anh chị dùng búp bê để tập thay tã</td></tr>
+        <tr><td>Chạm nhẹ, thương em</td><td>Vuốt bằng cả lòng bàn tay, không chạm thóp và mắt, chỉ bế khi ngồi và có người lớn, không cho em ăn, đeo khẩu trang khi ốm</td><td>Pregnancy Birth &amp; Baby (Úc), Safety 1st, AAP</td></tr>
+        <tr><td>Vì sao em khóc?</td><td>Nhận biết dấu hiệu đói, buồn ngủ, tã bẩn, muốn ôm; em sốt hoặc khóc mãi thì gọi bố mẹ, không bao giờ lắc em</td><td>Dấu hiệu đói sớm (AAP); phòng hội chứng rung lắc trẻ em</td></tr>
+        <tr><td>Giường ngủ an toàn</td><td>Em nằm ngửa, một mình, trong cũi trống (không gối, chăn dày, thú bông)</td><td>AAP Safe Sleep: "ABC" - Alone, Back, Crib</td></tr>
+        <tr><td>Thương mẹ</td><td>Mẹ sau sinh cần nước, nghỉ ngơi, ăn đủ và được yêu thương; con vẫn được mẹ thương</td><td>Chăm sóc hậu sản; giúp trẻ bớt cảm giác bị "thay thế"</td></tr>
+        <tr><td>Dọn nhà gọn gàng</td><td>Phân loại đồ to/đồ nhỏ, cất đồ dễ hóc (bi, xu, pin, bóng bay) lên cao, lau bàn, bỏ đồ bẩn vào giỏ</td><td>Montessori practical life; quy tắc "lọt cuộn giấy vệ sinh là dễ hóc"</td></tr>
+        <tr><td>Mẹ cần gì nhỉ?</td><td>Nghe và lấy đúng đồ dùng của em bé (từ vựng, làm theo yêu cầu)</td><td>Việc anh chị nhỏ có thể làm an toàn</td></tr>
+      </table></div>
+    </section>
+    <section>
+      <h3>Quy tắc an toàn cần nói đi nói lại</h3>
+      <ul>
+        <li>Con chỉ bế em khi đang <b>ngồi</b> trên ghế/sofa có gối đỡ, người lớn đặt em vào lòng và ngồi ngay cạnh.</li>
+        <li>Không bao giờ để con ở một mình với em bé, kể cả vài phút.</li>
+        <li>Không cho em ăn, uống bất cứ thứ gì; không đưa đồ chơi nhỏ cho em.</li>
+        <li>Không chạm thóp, mắt, miệng em; rửa tay trước khi chạm em.</li>
+        <li>Em sốt, khóc mãi, thở khác thường: con gọi bố mẹ ngay.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Cách chơi cùng con cho hiệu quả</h3>
+      <ul>
+        <li>Ngồi chơi cùng con, mỗi lần 1–2 trò. Sau mỗi trò, cho con làm thật với búp bê: rửa tay, thay tã, vuốt nhẹ, hát ru.</li>
+        <li>Giao cho con một "việc của chị" thật sự mỗi ngày: lấy tã, mang nước cho mẹ, chọn áo cho em, cất đồ chơi nhỏ.</li>
+        <li>Khen cụ thể: "Con rửa tay đủ 20 giây, giỏi quá" thay vì chỉ "giỏi quá".</li>
+        <li>Dành 10–15 phút mỗi ngày chỉ riêng cho con, không có em. Trẻ 4 tuổi có thể thoái lùi (đòi bú bình, tè dầm) khi có em; đó là bình thường, hãy kiên nhẫn.</li>
+        <li>Trò chơi không thay thế người lớn giám sát. Các nội dung y khoa ở đây ở mức phổ thông; hỏi bác sĩ nhi khi cần.</li>
+      </ul>
+    </section>
+    <section>
+      <h3>Nguồn tham khảo</h3>
+      <ul>
+        <li><a href="https://www.healthychildren.org/English/ages-stages/prenatal/Pages/Preparing-Your-Family-for-a-New-Baby.aspx" target="_blank" rel="noopener">AAP HealthyChildren: Preparing Your Family for a New Baby</a></li>
+        <li><a href="https://www.healthychildren.org/English/ages-stages/baby/sleep/Pages/a-parents-guide-to-safe-sleep.aspx" target="_blank" rel="noopener">AAP HealthyChildren: A Parent's Guide to Safe Sleep</a></li>
+        <li><a href="https://www.cdc.gov/clean-hands/about/index.html" target="_blank" rel="noopener">CDC: Clean Hands (rửa tay 20 giây)</a></li>
+        <li><a href="https://www.pregnancybirthbaby.org.au/toddler-and-the-new-baby" target="_blank" rel="noopener">Pregnancy, Birth and Baby (Úc): Toddler and the new baby</a></li>
+        <li><a href="https://health.clevelandclinic.org/how-to-prepare-toddler-for-new-baby" target="_blank" rel="noopener">Cleveland Clinic: How to prepare your toddler for a new baby</a></li>
+        <li><a href="https://www.loyolamedicine.org/event/2025/08/23/big-sister-big-brother-sibling-preparation-class-august-23" target="_blank" rel="noopener">Loyola Medicine: Big Sister, Big Brother sibling class</a></li>
+        <li><a href="https://themontessorinotebook.com/age-appropriate-chores-for-children" target="_blank" rel="noopener">The Montessori Notebook: Age-appropriate chores</a></li>
+      </ul>
+    </section>
+  </div>`;
+  document.getElementById('goHome').onclick=()=>home(false);
+  const fChi=document.getElementById('fChi'), fEm=document.getElementById('fEm'), fV=document.getElementById('fVoice');
+  fChi.oninput=()=>{ S.chi=fChi.value; save(); };
+  fEm.oninput=()=>{ S.em=fEm.value; save(); };
+  fV.onchange=()=>{ S.voice=fV.checked; save(); };
+  document.getElementById('test').onclick=()=>say('Chào {chi}! Mình cùng tập làm chị nha.');
+  const rb=document.getElementById('reset'); let armed=false;
+  rb.onclick=()=>{ if(!armed){ armed=true; rb.textContent='Bấm lần nữa để xóa'; setTimeout(()=>{armed=false; rb.textContent='Xóa huy hiệu, chơi lại từ đầu';},4000); return; }
+    S.stars={}; save(); rb.textContent='Đã xóa huy hiệu'; armed=false; };
+}
+
+home(false);
+</script>
+</body>
+</html>
